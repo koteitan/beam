@@ -22,6 +22,39 @@ const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
 const ctx = boardCanvas.getContext('2d');
 
+// Update button enabled/disabled state and styling
+function updateButtons() {
+  startButtons.forEach(btn => {
+    const enabled = (currentState === STATES.START_GAME);
+    btn.disabled = !enabled;
+    if (enabled) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  beamButtons.forEach(btn => {
+    const enabled = (currentState === STATES.SHOOT_BEAM);
+    btn.disabled = !enabled;
+    if (enabled) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+// Set current state, system message, turn captions, and button states
+function setState(state, message) {
+  currentState = state;
+  updateMessage(message);
+  updateTurnCaptions();
+  updateButtons();
+}
+
+// Initialize UI to start-game state
+setState(STATES.START_GAME, "Select a game size");
+
 // Update system message
 function updateMessage(text) {
   messageBox.textContent = text;
@@ -29,6 +62,7 @@ function updateMessage(text) {
 
 // Update turn captions highlighting
 function updateTurnCaptions() {
+  if (!game) return;
   if (game.turn === 1) {
     player1Caption.classList.add('active');
     player2Caption.classList.remove('active');
@@ -81,10 +115,8 @@ function initGame(size) {
   cellSize = boardCanvas.width / boardSize;
   game = new Game();
   game.init(boardSize);
-  currentState = STATES.PUT_TURRET;
-  updateMessage("Click a cell to put a turret for Player " + game.turn);
   drawBoard();
-  updateTurnCaptions();
+  setState(STATES.PUT_TURRET, "Click a cell to put a turret for Player " + game.turn);
 }
 
 /* Handle canvas click for turret placement:
@@ -108,8 +140,7 @@ boardCanvas.addEventListener('click', (e) => {
   
   lastTurret = pos;
   drawBoard();
-  currentState = STATES.SHOOT_BEAM;
-  updateMessage("Click a direction to shoot beam in");
+  setState(STATES.SHOOT_BEAM, "Click a direction to shoot beam in");
 });
 
 // Handle beam button clicks for shooting beam using game.put with a direction
@@ -137,14 +168,11 @@ beamButtons.forEach(btn => {
     }
     drawBoard();
     if (result.win) {
-      updateMessage("Player " + game.turn + " won!");
-      currentState = STATES.START_GAME;
+      setState(STATES.START_GAME, "Player " + game.turn + " won!");
     } else if (result.draw) {
-      updateMessage("The game was even");
-      currentState = STATES.START_GAME;
+      setState(STATES.START_GAME, "The game was even");
     } else {
-      updateMessage("Click a cell to put a turret for Player " + game.turn);
-      currentState = STATES.PUT_TURRET;
+      setState(STATES.PUT_TURRET, "Click a cell to put a turret for Player " + game.turn);
     }
   });
 });
