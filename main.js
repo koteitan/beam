@@ -75,7 +75,7 @@ function drawBoard(candidatePos = null) {
           if (r.error === 0) { valid = true; break; }
         }
         if (valid) {
-          ctx.fillStyle = 'rgba(0,0,255,0.2)';
+          ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
           ctx.fillRect(cc * cellSize, rr * cellSize, cellSize, cellSize);
         }
       }
@@ -111,6 +111,19 @@ function drawBoard(candidatePos = null) {
     }
   }
 
+  // Highlight valid beam-shoot candidates
+  if (currentState === STATES.SHOOT_BEAM && game && lastTurret !== null) {
+    const lr = Math.floor(lastTurret/boardSize), lc = lastTurret%boardSize;
+    for (let dir = 0; dir < 4; dir++) {
+      const res = game.move(lastTurret, dir);
+      if (res.error === 0) {
+        let r = lr + (dir === 2 ? -1 : dir === 3 ? 1 : 0);
+        let c = lc + (dir === 0 ? -1 : dir === 1 ? 1 : 0);
+        ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
+        ctx.fillRect(c*cellSize, r*cellSize, cellSize, cellSize);
+      }
+    }
+  }
   // Highlight clicked candidate (turret or beam)
   if (candidatePos !== null) {
     const row = Math.floor(candidatePos/boardSize);

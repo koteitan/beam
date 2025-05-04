@@ -21,8 +21,8 @@ h1 {
   background-color: white;
 }
 .start-btn.active {
-  background-color: blue;
-  color: white;
+  background-color: rgba(173, 216, 230, 0.5);
+  color: #000;
 }
 
 /* Canvas styling */
@@ -62,8 +62,8 @@ h1 {
 }
 
 .beam-btn.active {
-  background-color: blue;
-  color: #fff;
+  background-color: rgba(173, 216, 230, 0.5);
+  color: #000;
 }
 
 /* Message box styling */
