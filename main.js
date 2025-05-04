@@ -10,7 +10,7 @@ const lang = navigator.language.includes('ja') ? 'ja' : 'en';
 
 let currentState = STATES.START_GAME;
 let game = null;
-let boardSize = 0;
+let boardSize = 4; // デフォルトのボードサイズを4に設定
 let cellSize = 0;
 let lastTurret = null;
 let vsComMode = false; // COM対戦モードのフラグ
@@ -48,6 +48,32 @@ function setState(state, msgJa, msgEn) {
 
 // Initialize UI
 setState(STATES.START_GAME, "ゲームサイズを選択してください", "Select a game size");
+
+// ページ読み込み時にcanvasとゲームを初期化
+function initializeCanvas() {
+  const isMobile = window.innerWidth < 600;
+  if (isMobile) {
+    const maxWidth = window.innerWidth - 40;
+    boardCanvas.width = maxWidth;
+    boardCanvas.height = maxWidth;
+  } else {
+    // デスクトップ（Windows含む）ではキャンバスサイズを大きくする
+    boardCanvas.width = 500;
+    boardCanvas.height = 500;
+  }
+  cellSize = boardCanvas.width / boardSize;
+  
+  // 初期状態でもゲームオブジェクトを作成
+  if (!game) {
+    game = new Game();
+    game.init(boardSize);
+  }
+  
+  drawBoard();
+}
+
+// ページ読み込み時に初期化
+window.addEventListener('DOMContentLoaded', initializeCanvas);
 
 // チェックボックス状態変更時の処理
 vsComCheckbox.addEventListener('change', function() {
@@ -211,12 +237,16 @@ function drawBoard(candidatePos = null) {
 function initGame(size) {
   boardSize = size;
   
-  // Adjust canvas size for mobile devices
+  // Adjust canvas size
   const isMobile = window.innerWidth < 600;
   if (isMobile) {
     const maxWidth = window.innerWidth - 40; // 20px margin on each side
     boardCanvas.width = maxWidth;
     boardCanvas.height = maxWidth;
+  } else {
+    // デスクトップ（Windows含む）ではキャンバスサイズを大きくする
+    boardCanvas.width = 500;
+    boardCanvas.height = 500;
   }
   
   cellSize = boardCanvas.width/boardSize;
@@ -242,9 +272,9 @@ window.addEventListener('resize', function() {
       boardCanvas.height = maxWidth;
       cellSize = boardCanvas.width/boardSize;
       drawBoard();
-    } else if (boardCanvas.width !== 400) {
-      boardCanvas.width = 400;
-      boardCanvas.height = 400;
+    } else if (boardCanvas.width !== 500) {
+      boardCanvas.width = 500;
+      boardCanvas.height = 500;
       cellSize = boardCanvas.width/boardSize;
       drawBoard();
     }
