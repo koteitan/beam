@@ -29,13 +29,6 @@ body {
   margin-left: 40px;
 }
 
-/* Checkbox container styling - 上部コンテナ */
-.checkbox-container {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 8px;
-  width: 100%;
-}
 
 /* Checkbox and select styling */
 .vs-com-label {
@@ -93,7 +86,7 @@ body {
 
 /* Style the strategy select dropdown */
 .com-strategy-select {
-  margin-left: 10px;
+  margin-right: 10px;
   padding: 4px 8px;
   border: 2px solid #adb5bd;
   border-radius: 4px;
@@ -218,9 +211,6 @@ address {
     flex: 1;
   }
   
-  .checkbox-container {
-    margin-bottom: 5px;
-  }
   
   .vs-com-label {
     font-size: 12px;
@@ -236,7 +226,7 @@ address {
   .com-strategy-select {
     font-size: 12px;
     padding: 2px 4px;
-    margin-left: 5px;
+    margin-right: 5px;
   }
   
   .start-btn {

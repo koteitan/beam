@@ -13,7 +13,7 @@ let game = null;
 let boardSize = 4; // デフォルトのボードサイズを4に設定
 let cellSize = 0;
 let lastTurret = null;
-let vsComMode = false; // COM対戦モードのフラグ
+let vsComMode = true; // COM対戦モードのフラグ（デフォルトはtrue）
 let startFromPlayer2 = false; // Player 2から開始するフラグ
 let comStrategyIndex = defaultStrategyIndex; // COMの戦略インデックス
 
@@ -23,7 +23,6 @@ const boardCanvas = document.getElementById('board');
 const messageBox = document.getElementById('message-box');
 const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
-const vsComCheckbox = document.getElementById('vs-com-checkbox');
 const player2StartCheckbox = document.getElementById('player2-start-checkbox');
 const comStrategySelect = document.getElementById('com-strategy-select');
 const ctx = boardCanvas.getContext('2d');
@@ -101,10 +100,6 @@ function initComStrategySelect() {
 }
 
 // チェックボックス状態変更時の処理
-vsComCheckbox.addEventListener('change', function() {
-  vsComMode = this.checked;
-});
-
 player2StartCheckbox.addEventListener('change', function() {
   startFromPlayer2 = this.checked;
 });
@@ -112,6 +107,8 @@ player2StartCheckbox.addEventListener('change', function() {
 // COMの戦略選択時の処理
 comStrategySelect.addEventListener('change', function() {
   comStrategyIndex = parseInt(this.value);
+  // 戦略に応じてvsComModeを更新
+  updateVsComMode(comStrategyIndex);
 });
 
 // COMの手を選択する関数（com.jsの戦略関数を呼び出す）

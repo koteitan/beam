@@ -63,9 +63,15 @@ const comStrategies = [comRandom, com2step];
 
 // COMの戦略名（日本語と英語）
 const comStrategyNames = {
-  ja: ["スライム", "ゴブリン"],
-  en: ["Slime", "Goblin"]
+  ja: ["スライム", "ゴブリン", "２人対戦"],
+  en: ["Slime", "Goblin", "Human Player"]
 };
 
 // デフォルトの戦略インデックス（1: ゴブリン）
 let defaultStrategyIndex = 1;
+
+// 戦略インデックスがHuman Player（2）の場合はvsComModeをfalseにする
+function updateVsComMode(strategyIndex) {
+  vsComMode = (strategyIndex !== 2);
+  return vsComMode;
+}
