@@ -145,12 +145,40 @@ function drawBoard(candidatePos = null) {
 // Initialize game and UI
 function initGame(size) {
   boardSize = size;
+  
+  // Adjust canvas size for mobile devices
+  const isMobile = window.innerWidth < 600;
+  if (isMobile) {
+    const maxWidth = window.innerWidth - 40; // 20px margin on each side
+    boardCanvas.width = maxWidth;
+    boardCanvas.height = maxWidth;
+  }
+  
   cellSize = boardCanvas.width/boardSize;
   game = new Game();
   game.init(boardSize);
   setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
   drawBoard();
 }
+
+// Handle window resize
+window.addEventListener('resize', function() {
+  if (game) {
+    const isMobile = window.innerWidth < 600;
+    if (isMobile) {
+      const maxWidth = window.innerWidth - 40;
+      boardCanvas.width = maxWidth;
+      boardCanvas.height = maxWidth;
+      cellSize = boardCanvas.width/boardSize;
+      drawBoard();
+    } else if (boardCanvas.width !== 400) {
+      boardCanvas.width = 400;
+      boardCanvas.height = 400;
+      cellSize = boardCanvas.width/boardSize;
+      drawBoard();
+    }
+  }
+});
 
 // Handle clicks: place turret candidate or shoot beam by adjacent click
 boardCanvas.addEventListener('click', e => {
