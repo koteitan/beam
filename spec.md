@@ -17,7 +17,6 @@ This is a turn-based board game.
 - Start buttons: init game by the size. There are the sizes: 2x2, 3x3, 4x4, 5x5.
 - canvas: show board
 - turn captions: show captions "Player 1" and "Player 2". The turn is shown by Blue background color.
-- beam buttons: left, right, up, down button in a 3x3 table.
 - message box: Show system message.
 
 ## main.js
@@ -33,7 +32,7 @@ There are the states as follows:
   - if user clicks a valid cell-> draw turret -> state = shoot-beam
 - shoot-beam: Player should select a direction to shoot beam in
   - message = "Click a direction to shoot beam in"
-  - if user clicks a valid beam button -> draw beam -> state = put-turret or start-game
+  - if user clicks a next cell of the turret put -> draw beam -> state = put-turret or start-game
 
 ### others
 - enabled buttons shall be painted in Blue.
