@@ -14,6 +14,7 @@ let boardSize = 0;
 let cellSize = 0;
 let lastTurret = null;
 let vsComMode = false; // COM対戦モードのフラグ
+let startFromPlayer2 = false; // Player 2から開始するフラグ
 
 // Cache DOM elements
 const startButtons = document.querySelectorAll('.start-btn');
@@ -22,6 +23,7 @@ const messageBox = document.getElementById('message-box');
 const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
 const vsComCheckbox = document.getElementById('vs-com-checkbox');
+const player2StartCheckbox = document.getElementById('player2-start-checkbox');
 const ctx = boardCanvas.getContext('2d');
 
 // Update start buttons enabled/disabled state
@@ -47,9 +49,13 @@ function setState(state, msgJa, msgEn) {
 // Initialize UI
 setState(STATES.START_GAME, "ゲームサイズを選択してください", "Select a game size");
 
-// COM対戦のチェックボックス状態変更時の処理
+// チェックボックス状態変更時の処理
 vsComCheckbox.addEventListener('change', function() {
   vsComMode = this.checked;
+});
+
+player2StartCheckbox.addEventListener('change', function() {
+  startFromPlayer2 = this.checked;
 });
 
 // COMの手をランダムに選択する関数
@@ -216,6 +222,12 @@ function initGame(size) {
   cellSize = boardCanvas.width/boardSize;
   game = new Game();
   game.init(boardSize);
+  
+  // Player 2から開始する場合は、turnを2に設定
+  if (startFromPlayer2) {
+    game.turn = 2;
+  }
+  
   setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
   drawBoard();
 }
@@ -305,7 +317,7 @@ boardCanvas.addEventListener('click', e => {
 // Start button listeners
 startButtons.forEach(btn => btn.addEventListener('click', () => {
   initGame(parseInt(btn.dataset.size));
-  // COMモードでゲーム開始時、COMが先手（プレイヤー2）の場合は自動的に手を選択
+  // COMモードでゲーム開始時、COMのターン（プレイヤー2）の場合は自動的に手を選択
   if (vsComMode && game.turn === 2) {
     comPlay();
   }
