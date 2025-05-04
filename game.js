@@ -8,11 +8,13 @@ const ikind_vertbeam = 3;
 const ikind_crossbeam = 4;
 
 /* Game state */
-Game = function(Game){
-  this.board = Game.board.clone();
-  this.turn = Game.turn;
-  this.error = Game.error;
-  this.n = Game.n;
+Game = function(g){
+  if (g != null){
+    this.board = g.board.clone();
+    this.turn = g.turn;
+    this.error = g.error;
+    this.n = g.n;
+  }
 }
 
 Game.prototype.init = function(n){

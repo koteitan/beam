@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Beam</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Beam</h1>
+  
+  <!-- Start Buttons for game size selection -->
+  <div id="start-buttons">
+    <button class="start-btn" data-size="2">2x2</button>
+    <button class="start-btn" data-size="3">3x3</button>
+    <button class="start-btn" data-size="4">4x4</button>
+    <button class="start-btn" data-size="5">5x5</button>
+  </div>
+  
+  <!-- Canvas for displaying the game board -->
+  <canvas id="board" width="400" height="400"></canvas>
+  
+  <!-- Turn Captions -->
+  <div id="turn-captions">
+    <span id="player1" class="player active">Player 1</span>
+    <span id="player2" class="player">Player 2</span>
+  </div>
+  
+  <!-- Beam Direction Buttons in 3x3 layout -->
+  <div id="beam-controls">
+    <table>
+      <tr>
+        <td></td>
+        <td><button class="beam-btn" data-direction="up">↑</button></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><button class="beam-btn" data-direction="left">←</button></td>
+        <td></td>
+        <td><button class="beam-btn" data-direction="right">→</button></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><button class="beam-btn" data-direction="down">↓</button></td>
+        <td></td>
+      </tr>
+    </table>
+  </div>
+  
+  <!-- Message Box for System Messages -->
+  <div id="message-box"></div>
+  
+  <script src="exarray.js"></script>
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
