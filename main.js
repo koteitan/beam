@@ -84,55 +84,51 @@ player2StartCheckbox.addEventListener('change', function() {
   startFromPlayer2 = this.checked;
 });
 
-// COMの手をランダムに選択する関数
-function comPlay() {
+// COMの手を選択する関数（com.jsのcomPlay関数を呼び出す）
+function handleComTurn() {
   if (!vsComMode || game.turn !== 2) return; // COMモードでない、またはCOMのターンでない場合は何もしない
   
   // 少し遅延を入れてCOMの動きを見えるようにする
   setTimeout(() => {
-    // 有効な手の候補をすべて列挙
-    const validMoves = [];
-    
-    for (let r = 0; r < boardSize; r++) {
-      for (let c = 0; c < boardSize; c++) {
-        const pos = r * boardSize + c;
-        if (game.board[r][c] !== ikind_blank) continue;
-        
-        for (let dir = 0; dir < 4; dir++) {
-          const result = game.move(pos, dir);
-          if (result.error === 0) {
-            validMoves.push({ pos, dir });
+    // com.jsのcomPlay関数を呼び出して次の状態を取得
+    comPlay(game, (nextState) => {
+      // 選択した手を実行
+      // nextStateから元の手（位置と方向）を特定する必要がある
+      const prevBoard = game.board;
+      const nextBoard = nextState.board;
+      
+      // タレットの位置を特定
+      let turretPos = -1;
+      for (let y = 0; y < boardSize; y++) {
+        for (let x = 0; x < boardSize; x++) {
+          if (prevBoard[y][x] === ikind_blank && nextBoard[y][x] === ikind_turret) {
+            turretPos = y * boardSize + x;
+            break;
           }
         }
+        if (turretPos !== -1) break;
       }
-    }
-    
-    if (validMoves.length === 0) return; // 有効な手がない場合
-    
-    // ランダムに手を選択
-    const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-    
-    // 選択した手を実行
-    lastTurret = randomMove.pos;
-    drawBoard(randomMove.pos);
-    
-    // 少し遅延を入れてビーム発射を見えるようにする
-    setTimeout(() => {
-      const res = game.move(randomMove.pos, randomMove.dir);
-      if (res.error !== 0) {
-        console.error('COMの手でエラーが発生しました:', res.error);
+      
+      if (turretPos === -1) {
+        console.error('COMの手でタレットの位置を特定できませんでした');
         return;
       }
       
-      game = res.next;
-      if (!game.check()) {
-        const winner = game.turn === 1 ? 2 : 1;
-        setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
-      } else {
-        setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
-      }
-      drawBoard();
-    }, 500);
+      lastTurret = turretPos;
+      drawBoard(turretPos);
+      
+      // 少し遅延を入れてビーム発射を見えるようにする
+      setTimeout(() => {
+        game = nextState;
+        if (!game.check()) {
+          const winner = game.turn === 1 ? 2 : 1;
+          setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+        } else {
+          setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+        }
+        drawBoard();
+      }, 500);
+    });
   }, 1000);
 }
 
@@ -337,7 +333,7 @@ boardCanvas.addEventListener('click', e => {
       setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
       // COMのターンなら自動的に手を選択
       if (vsComMode && game.turn === 2) {
-        comPlay();
+        handleComTurn();
       }
     }
     drawBoard();
@@ -349,6 +345,6 @@ startButtons.forEach(btn => btn.addEventListener('click', () => {
   initGame(parseInt(btn.dataset.size));
   // COMモードでゲーム開始時、COMのターン（プレイヤー2）の場合は自動的に手を選択
   if (vsComMode && game.turn === 2) {
-    comPlay();
+    handleComTurn();
   }
 }));
