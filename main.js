@@ -112,7 +112,13 @@ player2StartCheckbox.addEventListener('change', function() {
 comStrategySelect.addEventListener('change', function() {
   comStrategyIndex = parseInt(this.value);
   // 戦略に応じてvsComModeを更新
+  const prevVsComMode = vsComMode;
   updateVsComMode(comStrategyIndex);
+  
+  // 2人対戦からCOMモードに変更され、かつ現在のターンがPlayer2の場合は、すぐにCOMの手を選択
+  if (!prevVsComMode && vsComMode && game && game.turn === 2 && currentState === STATES.PUT_TURRET) {
+    handleComTurn();
+  }
 });
 
 // COMの手を選択する関数（com.jsの戦略関数を呼び出す）
@@ -210,21 +216,21 @@ function drawBoard(candidatePos = null) {
           const color = 'red';
           ctx.fillStyle = color;
           ctx.beginPath();
-          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
+          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
           ctx.fill();
         } else if (cell === ikind_horizbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
+          ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
         } else if (cell === ikind_vertbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
+          ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         } else if (cell === ikind_crossbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
-          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
+          ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
+          ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         }
       }
     }
@@ -256,7 +262,7 @@ function drawBoard(candidatePos = null) {
     const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
+    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
     ctx.fill();
   }
 }
@@ -311,6 +317,11 @@ window.addEventListener('resize', function() {
 
 // Handle clicks: place turret candidate or shoot beam by adjacent click
 boardCanvas.addEventListener('click', e => {
+  // COMモードでかつPlayer2のターンの場合は入力を無視
+  if (vsComMode && game.turn === 2) {
+    return;
+  }
+  
   const rect = boardCanvas.getBoundingClientRect();
   const x = e.clientX-rect.left, y = e.clientY-rect.top;
   const c = Math.floor(x/cellSize), r = Math.floor(y/cellSize);
