@@ -47,6 +47,29 @@
   <!-- Message Box for System Messages -->
   <div id="message-box"></div>
   
+  <!-- Game Rules -->
+  <div id="game-rules" class="rules-container">
+    <h2 id="rules-title">ゲームのルール / Game Rules</h2>
+    <div id="rules-ja" class="rules">
+      <ol>
+        <li>プレイヤーは交互に手番を行います。</li>
+        <li>手番では、空いているマスに砲台を置き、指定した方向（上下左右）にビームを発射します。</li>
+        <li>ビームは砲台に当たるまで進み、途中の空きマスを通過します。</li>
+        <li>ビームが出せない場所には置けません。</li>
+        <li>手番がなくなったプレイヤーが負けです。</li>
+      </ol>
+    </div>
+    <div id="rules-en" class="rules">
+      <ol>
+        <li>Players take turns.</li>
+        <li>On your turn, place a turret on an empty cell and shoot a beam in one direction (up, down, left, or right).</li>
+        <li>The beam travels until it hits a turret, passing through empty cells along the way.</li>
+        <li>You cannot place a turret where it cannot shoot a beam.</li>
+        <li>The player who cannot make a move loses.</li>
+      </ol>
+    </div>
+  </div>
+  
   <script src="exarray.js"></script>
   <script src="game.js"></script>
   <script src="com.js"></script>
