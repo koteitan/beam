@@ -12,20 +12,22 @@
     
     <!-- Game Options and Start Buttons -->
     <div class="game-controls">
-      <!-- Checkboxes for game options -->
-      <div class="checkbox-container">
-        <label class="vs-com-label">
-          <input type="checkbox" id="vs-com-checkbox">
-          vs COM
-        </label>
+      <!-- 1st row: Strategy select and Player 2 start checkbox -->
+      <div class="first-row">
+        <div class="select-container">
+          <label for="com-strategy-select" id="strategy-label" class="strategy-label"></label>
+          <select id="com-strategy-select" class="com-strategy-select">
+            <!-- 言語に応じて表示を切り替えるため、空のオプションを用意 -->
+          </select>
+        </div>
         <label class="vs-com-label">
           <input type="checkbox" id="player2-start-checkbox">
           start from Player 2
         </label>
       </div>
       
-      <!-- Start Buttons for game size selection -->
-      <div id="start-buttons">
+      <!-- 2nd row: Start Buttons for game size selection -->
+      <div id="start-buttons" class="second-row">
         <button class="start-btn" data-size="3">3x3</button>
         <button class="start-btn" data-size="4">4x4</button>
         <button class="start-btn" data-size="5">5x5</button>
@@ -47,6 +49,7 @@
   
   <script src="exarray.js"></script>
   <script src="game.js"></script>
+  <script src="com.js"></script>
   <script src="main.js"></script>
   
   <hr>

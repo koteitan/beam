@@ -6,38 +6,46 @@ body {
   box-sizing: border-box;
 }
 
-/* Header container - タイトルとコントロールを横に配置 */
+/* Header container - タイトルとコントロールを縦に配置 */
 .header-container {
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 10px;
 }
 
-/* Title styling - 左寄せ */
+/* Title styling - 中央寄せ */
 .title {
-  margin: 0;
-  text-align: left;
+  margin: 0 0 10px 0;
+  text-align: center;
   font-size: 28px;
 }
 
-/* Game controls container - 右寄せ */
+/* Game controls container */
 .game-controls {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  margin-left: 40px;
-}
-
-/* Checkbox container styling - 上部コンテナ */
-.checkbox-container {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 8px;
+  align-items: center;
   width: 100%;
 }
 
-/* Checkbox styling */
+/* First row - Strategy select and Player 2 start checkbox */
+.first-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Second row - Start buttons */
+.second-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Checkbox and select styling */
 .vs-com-label {
   display: inline-flex;
   align-items: center;
@@ -91,11 +99,41 @@ body {
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
 }
 
-/* Start buttons styling - 下部コンテナ */
-#start-buttons {
+/* Select container and label */
+.select-container {
   display: flex;
-  justify-content: flex-start;
-  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.strategy-label {
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+/* Style the strategy select dropdown */
+.com-strategy-select {
+  padding: 4px 8px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.com-strategy-select:focus {
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+  border-color: #4CAF50;
+}
+
+.com-strategy-select option {
+  padding: 4px;
+}
+
+/* Start buttons styling */
+#start-buttons {
   white-space: nowrap;
 }
 
@@ -183,23 +221,29 @@ address {
     margin: 5px;
   }
   
-  .header-container {
-    flex-direction: row;
-    align-items: center;
-  }
-  
   .title {
     font-size: 20px;
+  }
+  
+  .first-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .select-container {
     margin-right: 10px;
   }
   
-  .game-controls {
-    flex: 1;
+  .strategy-label {
+    font-size: 12px;
+    margin-right: 5px;
   }
   
-  .checkbox-container {
-    margin-bottom: 5px;
+  .second-row {
+    justify-content: center;
   }
+  
   
   .vs-com-label {
     font-size: 12px;
@@ -210,6 +254,12 @@ address {
   #player2-start-checkbox {
     width: 14px;
     height: 14px;
+  }
+  
+  .com-strategy-select {
+    font-size: 12px;
+    padding: 2px 4px;
+    margin-right: 5px;
   }
   
   .start-btn {

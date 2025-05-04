@@ -13,8 +13,9 @@ let game = null;
 let boardSize = 4; // デフォルトのボードサイズを4に設定
 let cellSize = 0;
 let lastTurret = null;
-let vsComMode = false; // COM対戦モードのフラグ
+let vsComMode = true; // COM対戦モードのフラグ（デフォルトはtrue）
 let startFromPlayer2 = false; // Player 2から開始するフラグ
+let comStrategyIndex = defaultStrategyIndex; // COMの戦略インデックス
 
 // Cache DOM elements
 const startButtons = document.querySelectorAll('.start-btn');
@@ -22,8 +23,8 @@ const boardCanvas = document.getElementById('board');
 const messageBox = document.getElementById('message-box');
 const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
-const vsComCheckbox = document.getElementById('vs-com-checkbox');
 const player2StartCheckbox = document.getElementById('player2-start-checkbox');
+const comStrategySelect = document.getElementById('com-strategy-select');
 const ctx = boardCanvas.getContext('2d');
 
 // Update start buttons enabled/disabled state
@@ -73,66 +74,99 @@ function initializeCanvas() {
 }
 
 // ページ読み込み時に初期化
-window.addEventListener('DOMContentLoaded', initializeCanvas);
-
-// チェックボックス状態変更時の処理
-vsComCheckbox.addEventListener('change', function() {
-  vsComMode = this.checked;
+window.addEventListener('DOMContentLoaded', function() {
+  initializeCanvas();
+  
+  // COMの戦略選択ドロップダウンを言語に応じて初期化
+  initComStrategySelect();
 });
 
+// COMの戦略選択ドロップダウンを言語に応じて初期化する関数
+function initComStrategySelect() {
+  // ドロップダウンの中身をクリア
+  comStrategySelect.innerHTML = '';
+  
+  // 言語に応じた戦略名を取得
+  const strategyNames = comStrategyNames[lang === 'ja' ? 'ja' : 'en'];
+  
+  // 各戦略のオプションを追加
+  strategyNames.forEach((name, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = name;
+    option.selected = index === defaultStrategyIndex;
+    comStrategySelect.appendChild(option);
+  });
+  
+  // 言語に応じてラベルを設定
+  const strategyLabel = document.getElementById('strategy-label');
+  strategyLabel.textContent = lang === 'ja' ? '対戦相手' : 'Opponent';
+}
+
+// チェックボックス状態変更時の処理
 player2StartCheckbox.addEventListener('change', function() {
   startFromPlayer2 = this.checked;
 });
 
-// COMの手をランダムに選択する関数
-function comPlay() {
+// COMの戦略選択時の処理
+comStrategySelect.addEventListener('change', function() {
+  comStrategyIndex = parseInt(this.value);
+  // 戦略に応じてvsComModeを更新
+  const prevVsComMode = vsComMode;
+  updateVsComMode(comStrategyIndex);
+  
+  // 2人対戦からCOMモードに変更され、かつ現在のターンがPlayer2の場合は、すぐにCOMの手を選択
+  if (!prevVsComMode && vsComMode && game && game.turn === 2 && currentState === STATES.PUT_TURRET) {
+    handleComTurn();
+  }
+});
+
+// COMの手を選択する関数（com.jsの戦略関数を呼び出す）
+function handleComTurn() {
   if (!vsComMode || game.turn !== 2) return; // COMモードでない、またはCOMのターンでない場合は何もしない
   
   // 少し遅延を入れてCOMの動きを見えるようにする
   setTimeout(() => {
-    // 有効な手の候補をすべて列挙
-    const validMoves = [];
-    
-    for (let r = 0; r < boardSize; r++) {
-      for (let c = 0; c < boardSize; c++) {
-        const pos = r * boardSize + c;
-        if (game.board[r][c] !== ikind_blank) continue;
-        
-        for (let dir = 0; dir < 4; dir++) {
-          const result = game.move(pos, dir);
-          if (result.error === 0) {
-            validMoves.push({ pos, dir });
+    // 選択された戦略関数を呼び出して次の状態を取得
+    const strategyFunction = comStrategies[comStrategyIndex];
+    strategyFunction(game, (nextState) => {
+      // 選択した手を実行
+      // nextStateから元の手（位置と方向）を特定する必要がある
+      const prevBoard = game.board;
+      const nextBoard = nextState.board;
+      
+      // タレットの位置を特定
+      let turretPos = -1;
+      for (let y = 0; y < boardSize; y++) {
+        for (let x = 0; x < boardSize; x++) {
+          if (prevBoard[y][x] === ikind_blank && nextBoard[y][x] === ikind_turret) {
+            turretPos = y * boardSize + x;
+            break;
           }
         }
+        if (turretPos !== -1) break;
       }
-    }
-    
-    if (validMoves.length === 0) return; // 有効な手がない場合
-    
-    // ランダムに手を選択
-    const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-    
-    // 選択した手を実行
-    lastTurret = randomMove.pos;
-    drawBoard(randomMove.pos);
-    
-    // 少し遅延を入れてビーム発射を見えるようにする
-    setTimeout(() => {
-      const res = game.move(randomMove.pos, randomMove.dir);
-      if (res.error !== 0) {
-        console.error('COMの手でエラーが発生しました:', res.error);
+      
+      if (turretPos === -1) {
+        console.error('COMの手でタレットの位置を特定できませんでした');
         return;
       }
       
-      game = res.next;
-      if (!game.check()) {
-        const winner = game.turn === 1 ? 2 : 1;
-        setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
-      } else {
-        setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
-      }
-      drawBoard();
-    }, 500);
+      lastTurret = turretPos;
+      drawBoard(turretPos);
+      
+      // 少し遅延を入れてビーム発射を見えるようにする
+      setTimeout(() => {
+        game = nextState;
+        if (!game.check()) {
+          const winner = game.turn === 1 ? 2 : 1;
+          setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+        } else {
+          setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+        }
+        drawBoard();
+      }, 500);
+    });
   }, 1000);
 }
 
@@ -182,21 +216,21 @@ function drawBoard(candidatePos = null) {
           const color = 'red';
           ctx.fillStyle = color;
           ctx.beginPath();
-          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
+          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
           ctx.fill();
         } else if (cell === ikind_horizbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
+          ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
         } else if (cell === ikind_vertbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
+          ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         } else if (cell === ikind_crossbeam) {
-          const t = cellSize/5, o = (cellSize-t)/2;
+          const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
-          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
+          ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
+          ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         }
       }
     }
@@ -228,7 +262,7 @@ function drawBoard(candidatePos = null) {
     const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
+    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
     ctx.fill();
   }
 }
@@ -283,6 +317,11 @@ window.addEventListener('resize', function() {
 
 // Handle clicks: place turret candidate or shoot beam by adjacent click
 boardCanvas.addEventListener('click', e => {
+  // COMモードでかつPlayer2のターンの場合は入力を無視
+  if (vsComMode && game.turn === 2) {
+    return;
+  }
+  
   const rect = boardCanvas.getBoundingClientRect();
   const x = e.clientX-rect.left, y = e.clientY-rect.top;
   const c = Math.floor(x/cellSize), r = Math.floor(y/cellSize);
@@ -337,7 +376,7 @@ boardCanvas.addEventListener('click', e => {
       setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
       // COMのターンなら自動的に手を選択
       if (vsComMode && game.turn === 2) {
-        comPlay();
+        handleComTurn();
       }
     }
     drawBoard();
@@ -349,6 +388,6 @@ startButtons.forEach(btn => btn.addEventListener('click', () => {
   initGame(parseInt(btn.dataset.size));
   // COMモードでゲーム開始時、COMのターン（プレイヤー2）の場合は自動的に手を選択
   if (vsComMode && game.turn === 2) {
-    comPlay();
+    handleComTurn();
   }
 }));
