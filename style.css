@@ -6,29 +6,44 @@ body {
   box-sizing: border-box;
 }
 
-/* Header container - タイトルとコントロールを横に配置 */
+/* Header container - タイトルとコントロールを縦に配置 */
 .header-container {
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 10px;
 }
 
-/* Title styling - 左寄せ */
+/* Title styling - 中央寄せ */
 .title {
-  margin: 0;
-  text-align: left;
+  margin: 0 0 10px 0;
+  text-align: center;
   font-size: 28px;
 }
 
-/* Game controls container - 右寄せ */
+/* Game controls container */
 .game-controls {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  margin-left: 40px;
+  align-items: center;
+  width: 100%;
 }
 
+/* First row - Strategy select and Player 2 start checkbox */
+.first-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Second row - Start buttons */
+.second-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 
 /* Checkbox and select styling */
 .vs-com-label {
@@ -84,9 +99,21 @@ body {
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
 }
 
+/* Select container and label */
+.select-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.strategy-label {
+  font-size: 14px;
+  margin-right: 8px;
+}
+
 /* Style the strategy select dropdown */
 .com-strategy-select {
-  margin-right: 10px;
   padding: 4px 8px;
   border: 2px solid #adb5bd;
   border-radius: 4px;
@@ -105,11 +132,8 @@ body {
   padding: 4px;
 }
 
-/* Start buttons styling - 下部コンテナ */
+/* Start buttons styling */
 #start-buttons {
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
   white-space: nowrap;
 }
 
@@ -197,18 +221,27 @@ address {
     margin: 5px;
   }
   
-  .header-container {
-    flex-direction: row;
-    align-items: center;
-  }
-  
   .title {
     font-size: 20px;
+  }
+  
+  .first-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .select-container {
     margin-right: 10px;
   }
   
-  .game-controls {
-    flex: 1;
+  .strategy-label {
+    font-size: 12px;
+    margin-right: 5px;
+  }
+  
+  .second-row {
+    justify-content: center;
   }
   
   

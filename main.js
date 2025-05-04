@@ -97,6 +97,10 @@ function initComStrategySelect() {
     option.selected = index === defaultStrategyIndex;
     comStrategySelect.appendChild(option);
   });
+  
+  // 言語に応じてラベルを設定
+  const strategyLabel = document.getElementById('strategy-label');
+  strategyLabel.textContent = lang === 'ja' ? '対戦相手' : 'Opponent';
 }
 
 // チェックボックス状態変更時の処理
