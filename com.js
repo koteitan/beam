@@ -1,6 +1,11 @@
 // com.js - Computer player strategies
 
-// COMの手をランダムに選択する関数
+/**
+ * COMの手を選択する関数
+ * @param {Game} g - 現在のゲーム状態
+ * @param {Function} callback - 選択した次の状態を処理するコールバック関数
+ * @returns {Game|undefined} - コールバックが指定されていない場合は次の状態を返す
+ */
 function comPlay(g, callback) {
   // 有効な手の候補をすべて列挙（game.enumnextを使用）
   const nextStates = g.enumnext();
@@ -13,6 +18,7 @@ function comPlay(g, callback) {
   // 選択した手を実行するためのコールバックを呼び出す
   if (callback) {
     callback(randomState);
+    return;
   }
   
   return randomState;
