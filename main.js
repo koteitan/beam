@@ -87,7 +87,7 @@ function drawBoard(candidatePos = null) {
         const cell = game.board[r][c];
         if (cell === ikind_blank) continue;
         if (cell === ikind_turret) {
-          const color = (game.turn === 1) ? 'red' : 'green';
+          const color = 'red';
           ctx.fillStyle = color;
           ctx.beginPath();
           ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
