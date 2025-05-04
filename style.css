@@ -37,7 +37,7 @@ body {
   width: 100%;
 }
 
-/* Checkbox styling */
+/* Checkbox and select styling */
 .vs-com-label {
   display: inline-flex;
   align-items: center;
@@ -89,6 +89,27 @@ body {
 #vs-com-checkbox:focus,
 #player2-start-checkbox:focus {
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+}
+
+/* Style the strategy select dropdown */
+.com-strategy-select {
+  margin-left: 10px;
+  padding: 4px 8px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.com-strategy-select:focus {
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+  border-color: #4CAF50;
+}
+
+.com-strategy-select option {
+  padding: 4px;
 }
 
 /* Start buttons styling - 下部コンテナ */
@@ -210,6 +231,12 @@ address {
   #player2-start-checkbox {
     width: 14px;
     height: 14px;
+  }
+  
+  .com-strategy-select {
+    font-size: 12px;
+    padding: 2px 4px;
+    margin-left: 5px;
   }
   
   .start-btn {

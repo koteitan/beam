@@ -15,6 +15,7 @@ let cellSize = 0;
 let lastTurret = null;
 let vsComMode = false; // COM対戦モードのフラグ
 let startFromPlayer2 = false; // Player 2から開始するフラグ
+let comStrategyIndex = defaultStrategyIndex; // COMの戦略インデックス
 
 // Cache DOM elements
 const startButtons = document.querySelectorAll('.start-btn');
@@ -24,6 +25,7 @@ const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
 const vsComCheckbox = document.getElementById('vs-com-checkbox');
 const player2StartCheckbox = document.getElementById('player2-start-checkbox');
+const comStrategySelect = document.getElementById('com-strategy-select');
 const ctx = boardCanvas.getContext('2d');
 
 // Update start buttons enabled/disabled state
@@ -73,7 +75,30 @@ function initializeCanvas() {
 }
 
 // ページ読み込み時に初期化
-window.addEventListener('DOMContentLoaded', initializeCanvas);
+window.addEventListener('DOMContentLoaded', function() {
+  initializeCanvas();
+  
+  // COMの戦略選択ドロップダウンを言語に応じて初期化
+  initComStrategySelect();
+});
+
+// COMの戦略選択ドロップダウンを言語に応じて初期化する関数
+function initComStrategySelect() {
+  // ドロップダウンの中身をクリア
+  comStrategySelect.innerHTML = '';
+  
+  // 言語に応じた戦略名を取得
+  const strategyNames = comStrategyNames[lang === 'ja' ? 'ja' : 'en'];
+  
+  // 各戦略のオプションを追加
+  strategyNames.forEach((name, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = name;
+    option.selected = index === defaultStrategyIndex;
+    comStrategySelect.appendChild(option);
+  });
+}
 
 // チェックボックス状態変更時の処理
 vsComCheckbox.addEventListener('change', function() {
@@ -84,14 +109,20 @@ player2StartCheckbox.addEventListener('change', function() {
   startFromPlayer2 = this.checked;
 });
 
-// COMの手を選択する関数（com.jsのcomPlay関数を呼び出す）
+// COMの戦略選択時の処理
+comStrategySelect.addEventListener('change', function() {
+  comStrategyIndex = parseInt(this.value);
+});
+
+// COMの手を選択する関数（com.jsの戦略関数を呼び出す）
 function handleComTurn() {
   if (!vsComMode || game.turn !== 2) return; // COMモードでない、またはCOMのターンでない場合は何もしない
   
   // 少し遅延を入れてCOMの動きを見えるようにする
   setTimeout(() => {
-    // com.jsのcomPlay関数を呼び出して次の状態を取得
-    comPlay(game, (nextState) => {
+    // 選択された戦略関数を呼び出して次の状態を取得
+    const strategyFunction = comStrategies[comStrategyIndex];
+    strategyFunction(game, (nextState) => {
       // 選択した手を実行
       // nextStateから元の手（位置と方向）を特定する必要がある
       const prevBoard = game.board;
