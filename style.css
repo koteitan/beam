@@ -2,6 +2,29 @@ body {
   font-family: Arial, sans-serif;
   text-align: center;
   margin: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 10px;
+  }
+  
+  #board {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  #turn-captions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .player {
+    margin: 5px;
+  }
 }
 
 h1 {
