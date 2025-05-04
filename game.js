@@ -107,7 +107,7 @@ Game.prototype.enumnext = function(){
     for (var x = 0; x < n; x++){
       if (this.board[y][x] == ikind_blank){
         /* try left beam */
-        if (x > 0 && this.board[y][x-1] == ikind_blank){
+        if (x > 0 && this.board[y][x-1] != ikind_turret){
           ret = this.move(y*n+x, 0);
           if (ret.error == 0){
             next.push(ret.next);
@@ -116,7 +116,7 @@ Game.prototype.enumnext = function(){
           }
         }
         /* try right beam */
-        if (x < n-1 && this.board[y][x+1] == ikind_blank){
+        if (x < n-1 && this.board[y][x+1] != ikind_turret){
           ret = this.move(y*n+x, 1);
           if (ret.error == 0){
             next.push(ret.next);
@@ -125,7 +125,7 @@ Game.prototype.enumnext = function(){
           }
         }
         /* try up beam */
-        if (y > 0 && this.board[y-1][x] == ikind_blank){
+        if (y > 0 && this.board[y-1][x] != ikind_turret){
           ret = this.move(y*n+x, 2);
           if (ret.error == 0){
             next.push(ret.next);
@@ -134,7 +134,7 @@ Game.prototype.enumnext = function(){
           }
         }
         /* try down beam */
-        if (y < n-1 && this.board[y+1][x] == ikind_blank){
+        if (y < n-1 && this.board[y+1][x] != ikind_turret){
           ret = this.move(y*n+x, 3);
           if (ret.error == 0){
             next.push(ret.next);
@@ -155,22 +155,22 @@ Game.prototype.check = function() {
     for (let x = 0; x < n; x++) {
       if (board[y][x] === ikind_blank) {
         // try left
-        if (x > 0 && board[y][x-1] === ikind_blank) {
+        if (x > 0 && board[y][x-1] !== ikind_turret) {
           const ret = this.move(y*n + x, 0);
           if (ret.error === 0) return true;
         }
         // try right
-        if (x < n-1 && board[y][x+1] === ikind_blank) {
+        if (x < n-1 && board[y][x+1] !== ikind_turret) {
           const ret = this.move(y*n + x, 1);
           if (ret.error === 0) return true;
         }
         // try up
-        if (y > 0 && board[y-1][x] === ikind_blank) {
+        if (y > 0 && board[y-1][x] !== ikind_turret) {
           const ret = this.move(y*n + x, 2);
           if (ret.error === 0) return true;
         }
         // try down
-        if (y < n-1 && board[y+1][x] === ikind_blank) {
+        if (y < n-1 && board[y+1][x] !== ikind_turret) {
           const ret = this.move(y*n + x, 3);
           if (ret.error === 0) return true;
         }

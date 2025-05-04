@@ -6,40 +6,103 @@ body {
   box-sizing: border-box;
 }
 
-@media (max-width: 600px) {
-  body {
-    margin: 10px;
-  }
-  
-  #board {
-    max-width: 100%;
-    height: auto;
-  }
-  
-  #turn-captions {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .player {
-    margin: 5px;
-  }
+/* Header container - タイトルとコントロールを横に配置 */
+.header-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: 10px;
 }
 
-h1 {
-  margin-bottom: 20px;
+/* Title styling - 左寄せ */
+.title {
+  margin: 0;
+  text-align: left;
+  font-size: 28px;
 }
 
-/* Start buttons styling */
+/* Game controls container - 右寄せ */
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 40px;
+}
+
+/* Checkbox container styling - 上部コンテナ */
+.checkbox-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+/* Checkbox styling */
+.vs-com-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 3px 5px;
+  user-select: none;
+  font-size: 14px;
+}
+
+/* Style the checkboxes */
+#vs-com-checkbox,
+#player2-start-checkbox {
+  margin-right: 5px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #adb5bd;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  background-color: white;
+}
+
+/* Style the checked state */
+#vs-com-checkbox:checked,
+#player2-start-checkbox:checked {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+}
+
+/* Create checkmark */
+#vs-com-checkbox:checked::after,
+#player2-start-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Focus styles for accessibility */
+#vs-com-checkbox:focus,
+#player2-start-checkbox:focus {
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+}
+
+/* Start buttons styling - 下部コンテナ */
 #start-buttons {
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .start-btn {
-  padding: 10px 12px;
-  margin: 5px;
-  font-size: 16px;
+  padding: 8px 10px;
+  margin: 3px;
+  font-size: 14px;
   cursor: pointer;
   background-color: rgba(173, 216, 230, 0.5);
   color: #000;
@@ -48,11 +111,13 @@ h1 {
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
 }
+
 .start-btn:hover {
   background-color: rgba(173, 216, 230, 0.5);
   transform: translateY(-1px);
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
 }
+
 .start-btn.active {
   background-color: rgba(173, 216, 230, 0.5);
 }
@@ -67,18 +132,19 @@ h1 {
 /* Canvas styling */
 #board {
   border: 2px solid #000;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  max-width: 100%;
 }
 
 /* Turn captions styling */
 #turn-captions {
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: 15px;
+  font-size: 16px;
 }
 
 .player {
-  padding: 8px 15px;
-  margin: 0 10px;
+  padding: 6px 12px;
+  margin: 0 8px;
   border: none;
   border-radius: 6px;
   background-color: #f8f9fa;
@@ -94,40 +160,88 @@ h1 {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Beam buttons styling */
-#beam-controls button {
-  width: 50px;
-  height: 50px;
-  font-size: 18px;
-  cursor: pointer;
-  background-color: rgba(173, 216, 230, 0.5);
-  color: #000;
-  border: none;
-  border-radius: 6px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
-}
-.beam-btn:hover {
-  background-color: rgba(173, 216, 230, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25);
-}
-.beam-btn.active {
-  background-color: rgba(173, 216, 230, 0.5);
-}
-
 /* Message box styling */
 #message-box {
   background-color: #f8f9fa;
   border: none;
   border-radius: 6px;
-  padding: 15px;
-  min-height: 40px;
-  margin-top: 20px;
+  padding: 12px;
+  min-height: 30px;
+  margin-top: 15px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   color: #333;
 }
 
 address {
   text-align: right;
+  font-size: 12px;
+  margin-top: 15px;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 5px;
+  }
+  
+  .header-container {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  
+  .game-controls {
+    flex: 1;
+  }
+  
+  .checkbox-container {
+    margin-bottom: 5px;
+  }
+  
+  .vs-com-label {
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+  
+  #vs-com-checkbox,
+  #player2-start-checkbox {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .start-btn {
+    padding: 6px 8px;
+    margin: 2px;
+    font-size: 12px;
+  }
+  
+  #board {
+    margin-bottom: 10px;
+  }
+  
+  #turn-captions {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  
+  .player {
+    padding: 4px 8px;
+    margin: 0 5px;
+    font-size: 12px;
+  }
+  
+  #message-box {
+    padding: 8px;
+    min-height: 20px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  
+  address {
+    font-size: 10px;
+    margin-top: 10px;
+  }
 }

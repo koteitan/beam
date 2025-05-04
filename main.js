@@ -10,9 +10,11 @@ const lang = navigator.language.includes('ja') ? 'ja' : 'en';
 
 let currentState = STATES.START_GAME;
 let game = null;
-let boardSize = 0;
+let boardSize = 4; // デフォルトのボードサイズを4に設定
 let cellSize = 0;
 let lastTurret = null;
+let vsComMode = false; // COM対戦モードのフラグ
+let startFromPlayer2 = false; // Player 2から開始するフラグ
 
 // Cache DOM elements
 const startButtons = document.querySelectorAll('.start-btn');
@@ -20,6 +22,8 @@ const boardCanvas = document.getElementById('board');
 const messageBox = document.getElementById('message-box');
 const player1Caption = document.getElementById('player1');
 const player2Caption = document.getElementById('player2');
+const vsComCheckbox = document.getElementById('vs-com-checkbox');
+const player2StartCheckbox = document.getElementById('player2-start-checkbox');
 const ctx = boardCanvas.getContext('2d');
 
 // Update start buttons enabled/disabled state
@@ -44,6 +48,93 @@ function setState(state, msgJa, msgEn) {
 
 // Initialize UI
 setState(STATES.START_GAME, "ゲームサイズを選択してください", "Select a game size");
+
+// ページ読み込み時にcanvasとゲームを初期化
+function initializeCanvas() {
+  const isMobile = window.innerWidth < 600;
+  if (isMobile) {
+    const maxWidth = window.innerWidth - 40;
+    boardCanvas.width = maxWidth;
+    boardCanvas.height = maxWidth;
+  } else {
+    // デスクトップ（Windows含む）ではキャンバスサイズを大きくする
+    boardCanvas.width = 500;
+    boardCanvas.height = 500;
+  }
+  cellSize = boardCanvas.width / boardSize;
+  
+  // 初期状態でもゲームオブジェクトを作成
+  if (!game) {
+    game = new Game();
+    game.init(boardSize);
+  }
+  
+  drawBoard();
+}
+
+// ページ読み込み時に初期化
+window.addEventListener('DOMContentLoaded', initializeCanvas);
+
+// チェックボックス状態変更時の処理
+vsComCheckbox.addEventListener('change', function() {
+  vsComMode = this.checked;
+});
+
+player2StartCheckbox.addEventListener('change', function() {
+  startFromPlayer2 = this.checked;
+});
+
+// COMの手をランダムに選択する関数
+function comPlay() {
+  if (!vsComMode || game.turn !== 2) return; // COMモードでない、またはCOMのターンでない場合は何もしない
+  
+  // 少し遅延を入れてCOMの動きを見えるようにする
+  setTimeout(() => {
+    // 有効な手の候補をすべて列挙
+    const validMoves = [];
+    
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
+        const pos = r * boardSize + c;
+        if (game.board[r][c] !== ikind_blank) continue;
+        
+        for (let dir = 0; dir < 4; dir++) {
+          const result = game.move(pos, dir);
+          if (result.error === 0) {
+            validMoves.push({ pos, dir });
+          }
+        }
+      }
+    }
+    
+    if (validMoves.length === 0) return; // 有効な手がない場合
+    
+    // ランダムに手を選択
+    const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+    
+    // 選択した手を実行
+    lastTurret = randomMove.pos;
+    drawBoard(randomMove.pos);
+    
+    // 少し遅延を入れてビーム発射を見えるようにする
+    setTimeout(() => {
+      const res = game.move(randomMove.pos, randomMove.dir);
+      if (res.error !== 0) {
+        console.error('COMの手でエラーが発生しました:', res.error);
+        return;
+      }
+      
+      game = res.next;
+      if (!game.check()) {
+        const winner = game.turn === 1 ? 2 : 1;
+        setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+      } else {
+        setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+      }
+      drawBoard();
+    }, 500);
+  }, 1000);
+}
 
 // Draw board: grid, placement candidates, pieces, and click highlight
 function drawBoard(candidatePos = null) {
@@ -146,17 +237,27 @@ function drawBoard(candidatePos = null) {
 function initGame(size) {
   boardSize = size;
   
-  // Adjust canvas size for mobile devices
+  // Adjust canvas size
   const isMobile = window.innerWidth < 600;
   if (isMobile) {
     const maxWidth = window.innerWidth - 40; // 20px margin on each side
     boardCanvas.width = maxWidth;
     boardCanvas.height = maxWidth;
+  } else {
+    // デスクトップ（Windows含む）ではキャンバスサイズを大きくする
+    boardCanvas.width = 500;
+    boardCanvas.height = 500;
   }
   
   cellSize = boardCanvas.width/boardSize;
   game = new Game();
   game.init(boardSize);
+  
+  // Player 2から開始する場合は、turnを2に設定
+  if (startFromPlayer2) {
+    game.turn = 2;
+  }
+  
   setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
   drawBoard();
 }
@@ -171,9 +272,9 @@ window.addEventListener('resize', function() {
       boardCanvas.height = maxWidth;
       cellSize = boardCanvas.width/boardSize;
       drawBoard();
-    } else if (boardCanvas.width !== 400) {
-      boardCanvas.width = 400;
-      boardCanvas.height = 400;
+    } else if (boardCanvas.width !== 500) {
+      boardCanvas.width = 500;
+      boardCanvas.height = 500;
       cellSize = boardCanvas.width/boardSize;
       drawBoard();
     }
@@ -234,10 +335,20 @@ boardCanvas.addEventListener('click', e => {
       setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
     } else {
       setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+      // COMのターンなら自動的に手を選択
+      if (vsComMode && game.turn === 2) {
+        comPlay();
+      }
     }
     drawBoard();
   }
 });
 
 // Start button listeners
-startButtons.forEach(btn => btn.addEventListener('click', () => initGame(parseInt(btn.dataset.size))));
+startButtons.forEach(btn => btn.addEventListener('click', () => {
+  initGame(parseInt(btn.dataset.size));
+  // COMモードでゲーム開始時、COMのターン（プレイヤー2）の場合は自動的に手を選択
+  if (vsComMode && game.turn === 2) {
+    comPlay();
+  }
+}));
