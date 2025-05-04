@@ -79,6 +79,9 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // COMの戦略選択ドロップダウンを言語に応じて初期化
   initComStrategySelect();
+  
+  // プレイヤーのキャプションを更新
+  updatePlayerCaptions();
 });
 
 // COMの戦略選択ドロップダウンを言語に応じて初期化する関数
@@ -108,12 +111,31 @@ player2StartCheckbox.addEventListener('change', function() {
   startFromPlayer2 = this.checked;
 });
 
+// プレイヤーのキャプションを更新する関数
+function updatePlayerCaptions() {
+  // プレイヤー1のキャプションを言語に応じて更新
+  player1Caption.textContent = lang === 'ja' ? 'プレイヤー1' : 'Player 1';
+  
+  // プレイヤー2のキャプションを更新
+  if (vsComMode) {
+    // COMモードの場合、モンスター名を表示
+    const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
+    player2Caption.textContent = monsterName;
+  } else {
+    // 2人対戦モードの場合、「Player 2」を表示
+    player2Caption.textContent = lang === 'ja' ? 'プレイヤー2' : 'Player 2';
+  }
+}
+
 // COMの戦略選択時の処理
 comStrategySelect.addEventListener('change', function() {
   comStrategyIndex = parseInt(this.value);
   // 戦略に応じてvsComModeを更新
   const prevVsComMode = vsComMode;
   updateVsComMode(comStrategyIndex);
+  
+  // プレイヤーのキャプションを更新
+  updatePlayerCaptions();
   
   // 2人対戦からCOMモードに変更され、かつ現在のターンがPlayer2の場合は、すぐにCOMの手を選択
   if (!prevVsComMode && vsComMode && game && game.turn === 2 && currentState === STATES.PUT_TURRET) {
@@ -160,7 +182,13 @@ function handleComTurn() {
         game = nextState;
         if (!game.check()) {
           const winner = game.turn === 1 ? 2 : 1;
-          setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+          if (winner === 2 && vsComMode) {
+            // COMが勝利した場合、モンスター名を表示
+            const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
+            setState(STATES.START_GAME, `${monsterName}の勝利です！`, `${monsterName} won!`);
+          } else {
+            setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+          }
         } else {
           setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
         }
@@ -220,15 +248,15 @@ function drawBoard(candidatePos = null) {
           ctx.fill();
         } else if (cell === ikind_horizbeam) {
           const t = cellSize/6, o = (cellSize-t)/2;
-          ctx.fillStyle = 'yellow';
+          ctx.fillStyle = 'orange';
           ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
         } else if (cell === ikind_vertbeam) {
           const t = cellSize/6, o = (cellSize-t)/2;
-          ctx.fillStyle = 'yellow';
+          ctx.fillStyle = 'orange';
           ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         } else if (cell === ikind_crossbeam) {
           const t = cellSize/6, o = (cellSize-t)/2;
-          ctx.fillStyle = 'yellow';
+          ctx.fillStyle = 'orange';
           ctx.fillRect(c*cellSize + 2, r*cellSize+o, cellSize - 4, t);
           ctx.fillRect(c*cellSize+o, r*cellSize + 2, t, cellSize - 4);
         }
@@ -371,7 +399,13 @@ boardCanvas.addEventListener('click', e => {
     game = res.next;
     if (!game.check()) {
       const winner = game.turn === 1 ? 2 : 1;
-      setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+      if (winner === 2 && vsComMode) {
+        // COMが勝利した場合、モンスター名を表示
+        const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
+        setState(STATES.START_GAME, `${monsterName}の勝利です！`, `${monsterName} won!`);
+      } else {
+        setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+      }
     } else {
       setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
       // COMのターンなら自動的に手を選択
