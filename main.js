@@ -77,18 +77,20 @@ function drawBoard(candidatePos = null) {
     ctx.stroke();
   }
 
-  // Draw existing turrets and beams
   if (game) {
+    // Draw existing turrets and beams
     for (let r = 0; r < boardSize; r++) {
       for (let c = 0; c < boardSize; c++) {
         const cell = game.board[r][c];
-        if (!cell) continue;
-        if (cell.type === 'turret') {
-          ctx.fillStyle = (cell.owner === 1) ? 'red' : 'green';
+        if (cell === ikind_blank) continue;
+        if (cell === ikind_turret) {
+          const color = (game.turn === 1) ? 'red' : 'green';
+          ctx.fillStyle = color;
           ctx.beginPath();
           ctx.arc(c * cellSize + cellSize / 2, r * cellSize + cellSize / 2, cellSize / 4, 0, Math.PI * 2);
           ctx.fill();
-        } else if (cell.type === 'beam') {
+        } else {
+          // beam or crossbeam
           ctx.fillStyle = 'yellow';
           ctx.fillRect(c * cellSize + cellSize / 4, r * cellSize + cellSize / 4, cellSize / 2, cellSize / 2);
         }
@@ -100,8 +102,7 @@ function drawBoard(candidatePos = null) {
   if (candidatePos !== null) {
     const candRow = Math.floor(candidatePos / boardSize);
     const candCol = candidatePos % boardSize;
-    // Render candidate turret for current player
-    const color = (game && game.turn === 1) ? 'red' : 'green';
+    const color = game ? (game.turn === 1 ? 'red' : 'green') : 'blue';
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(candCol * cellSize + cellSize / 2, candRow * cellSize + cellSize / 2, cellSize / 4, 0, Math.PI * 2);
@@ -130,7 +131,7 @@ boardCanvas.addEventListener('click', (e) => {
   const pos = row * boardSize + col;
 
   // Check if blank cell
-  if (!game || game.board[row][col] !== 0) {
+  if (!game || game.board[row][col] !== ikind_blank) {
     updateMessage("Invalid cell. Choose another cell for Player " + (game ? game.turn : 1));
     return;
   }
@@ -150,11 +151,13 @@ beamButtons.forEach(btn => {
       updateMessage("Invalid direction");
       return;
     }
-    const result = game.put(lastTurret, direction);
+    const result = game.move(lastTurret, direction);
     if (result.error !== 0) {
       updateMessage("Error: " + result.error);
       return;
     }
+    // Advance to next game state
+    game = result.next;
     drawBoard();
     if (result.win) {
       setState(STATES.START_GAME, "Player " + game.turn + " won!");

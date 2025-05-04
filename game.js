@@ -47,10 +47,10 @@ Game.prototype.init = function(n){
 */
 const dir_x = [-1, +1, 0,  0];
 const dir_y = [ 0, 0, -1, +1];
-Game.prototype.put = function(pos, dir){
+Game.prototype.move = function(pos, dir){
   const n = this.n;
   const x = pos % n;
-  const y = pos / n;
+  const y = Math.floor(pos / n);
   const board = this.board;
   if (this.error != 0)       return {error: 1}; /* already error */
   if (pos < 0 || pos >= n*n) return {error: 2}; /* pos out of range */
@@ -64,11 +64,15 @@ Game.prototype.put = function(pos, dir){
   if (ny < 0 || ny >= n) return {error: 6}; /* cannot shoot beam because out of range */
   if (board[ny][nx] == ikind_turret) return {error: 7}; /* cannot shoot beam because of turret */
 
-  /* shoot beam to dir */
+  /* valid move */
   g = new Game(this);
+  g.board[y][x] = ikind_turret;
+  g.turn = (g.turn == 1) ? 2 : 1;
+  g.error = 0;
+  /* shoot beam to dir */
   for (var i = 1; i < n; i++){
-    const tx = nx + dx * i;
-    const ty = ny + dy * i;
+    const tx = x + dx * i;
+    const ty = y + dy * i;
     if (tx < 0 || tx >= n) break; /* out of range */
     if (ty < 0 || ty >= n) break; /* out of range */
     const t = board[ty][tx];
@@ -92,7 +96,7 @@ Game.prototype.put = function(pos, dir){
     }
     if (isbreak) break;
   }
-  return {error: 0, game: g};
+  return {error: 0, next: g};
 }
 
 /* generate next game state by solver */
@@ -104,36 +108,36 @@ Game.prototype.enumnext = function(){
       if (this.board[y][x] == ikind_blank){
         /* try left beam */
         if (x > 0 && this.board[y][x-1] == ikind_blank){
-          ret = this.put(y*n+x, 0);
+          ret = this.move(y*n+x, 0);
           if (ret.error == 0){
-            next.push(ret.game);
+            next.push(ret.next);
           }else{
             console.log("error: put error=" + ret.error + " pos=(" + x + "," + y + ") dir=left");
           }
         }
         /* try right beam */
         if (x < n-1 && this.board[y][x+1] == ikind_blank){
-          ret = this.put(y*n+x, 1);
+          ret = this.move(y*n+x, 1);
           if (ret.error == 0){
-            next.push(ret.game);
+            next.push(ret.next);
           }else{
             console.log("error: put error=" + ret.error + " pos=(" + x + "," + y + ") dir=right");
           }
         }
         /* try up beam */
         if (y > 0 && this.board[y-1][x] == ikind_blank){
-          ret = this.put(y*n+x, 2);
+          ret = this.move(y*n+x, 2);
           if (ret.error == 0){
-            next.push(ret.game);
+            next.push(ret.next);
           }else{
             console.log("error: put error=" + ret.error + " pos=(" + x + "," + y + ") dir=up");
           }
         }
         /* try down beam */
         if (y < n-1 && this.board[y+1][x] == ikind_blank){
-          ret = this.put(y*n+x, 3);
+          ret = this.move(y*n+x, 3);
           if (ret.error == 0){
-            next.push(ret.game);
+            next.push(ret.next);
           }else{
             console.log("error: put error=" + ret.error + " pos=(" + x + "," + y + ") dir=down");
           }
