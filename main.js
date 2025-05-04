@@ -82,7 +82,24 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // プレイヤーのキャプションを更新
   updatePlayerCaptions();
+  
+  // ゲームルールの表示を言語に応じて切り替え
+  updateGameRules();
 });
+
+// ゲームルールの表示を言語に応じて切り替える関数
+function updateGameRules() {
+  const rulesJa = document.getElementById('rules-ja');
+  const rulesEn = document.getElementById('rules-en');
+  
+  if (lang === 'ja') {
+    rulesJa.style.display = 'block';
+    rulesEn.style.display = 'none';
+  } else {
+    rulesJa.style.display = 'none';
+    rulesEn.style.display = 'block';
+  }
+}
 
 // COMの戦略選択ドロップダウンを言語に応じて初期化する関数
 function initComStrategySelect() {
@@ -190,7 +207,7 @@ function handleComTurn() {
             setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
           }
         } else {
-          setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+          setState(STATES.PUT_TURRET, `砲台を置いてください`, `Place a turret`);
         }
         drawBoard();
       }, 500);
@@ -320,7 +337,7 @@ function initGame(size) {
     game.turn = 2;
   }
   
-  setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+  setState(STATES.PUT_TURRET, `砲台を置いてください`, `Place a turret`);
   drawBoard();
 }
 
@@ -357,13 +374,20 @@ boardCanvas.addEventListener('click', e => {
 
   if (currentState===STATES.PUT_TURRET) {
     if (game.board[r][c]!==ikind_blank) {
-      setState(STATES.PUT_TURRET, `無効なセルです。プレイヤー${game.turn}のタレットを配置する他のセルを選択してください`, `Invalid cell. Choose another cell for Player ${game.turn}`);
+      setState(STATES.PUT_TURRET, `そこには砲台を置けません`, `Cannot place a turret here`);
       return;
     }
     lastTurret = pos;
-    setState(STATES.SHOOT_BEAM, '隣接するセルをクリックしてビームを発射してください', 'Click adjacent cell to shoot beam');
+    setState(STATES.SHOOT_BEAM, 'ビームを発射して下さい', 'Shoot a beam');
     drawBoard(pos);
   } else if (currentState===STATES.SHOOT_BEAM) {
+    // 直前に配置したタレットの位置をクリックした場合、put-turret状態に戻る
+    if (pos === lastTurret) {
+      setState(STATES.PUT_TURRET, `砲台を置いてください`, `Place a turret`);
+      drawBoard();
+      return;
+    }
+
     const lr = Math.floor(lastTurret/boardSize), lc = lastTurret%boardSize;
     const dr = r - lr, dc = c - lc;
     let dir = -1;
@@ -373,7 +397,7 @@ boardCanvas.addEventListener('click', e => {
     else if (dc === 0 && dr < 0) dir = 2;
     else if (dc === 0 && dr > 0) dir = 3;
     if (dir < 0) {
-      setState(STATES.SHOOT_BEAM, '無効な方向です。同じ行または列の整列したセルをクリックしてください', 'Invalid direction. Click aligned cell in same row or column.');
+      setState(STATES.SHOOT_BEAM, 'そこにはビームが出せません', 'Cannot shoot a beam here');
       return;
     }
     // Check clear path to clicked cell
@@ -387,7 +411,7 @@ boardCanvas.addEventListener('click', e => {
       if (ty === r && tx === c) { reachable = true; break; }
     }
     if (!reachable) {
-      setState(STATES.SHOOT_BEAM, '無効なビームターゲットです。同じ行または列のクリアなパスを選択してください', 'Invalid beam target. Choose a clear path in same row or column');
+      setState(STATES.SHOOT_BEAM, 'そこにはビームが出せません', 'Cannot shoot a beam here');
       return;
     }
     const res = game.move(lastTurret, dir);
@@ -407,7 +431,7 @@ boardCanvas.addEventListener('click', e => {
         setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
       }
     } else {
-      setState(STATES.PUT_TURRET, `プレイヤー${game.turn}のタレットを配置するセルをクリックしてください`, `Click a cell to put a turret for Player ${game.turn}`);
+      setState(STATES.PUT_TURRET, `砲台を置いてください`, `Place a turret`);
       // COMのターンなら自動的に手を選択
       if (vsComMode && game.turn === 2) {
         handleComTurn();

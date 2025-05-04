@@ -206,8 +206,43 @@ body {
   padding: 12px;
   min-height: 30px;
   margin-top: 15px;
+  margin-bottom: 15px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   color: #333;
+}
+
+/* Game rules styling */
+.rules-container {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+#rules-title {
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #333;
+}
+
+.rules {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.rules ol {
+  padding-left: 25px;
+  margin: 0;
+}
+
+.rules li {
+  margin-bottom: 5px;
 }
 
 address {
@@ -287,7 +322,32 @@ address {
     padding: 8px;
     min-height: 20px;
     margin-top: 10px;
+    margin-bottom: 10px;
     font-size: 12px;
+  }
+  
+  /* Game rules responsive styling */
+  .rules-container {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  #rules-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  .rules {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  
+  .rules ol {
+    padding-left: 20px;
+  }
+  
+  .rules li {
+    margin-bottom: 4px;
   }
   
   address {
