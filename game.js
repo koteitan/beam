@@ -148,6 +148,38 @@ Game.prototype.enumnext = function(){
   return next;
 }
 
+Game.prototype.check = function() {
+  const n = this.n;
+  const board = this.board;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (board[y][x] === ikind_blank) {
+        // try left
+        if (x > 0 && board[y][x-1] === ikind_blank) {
+          const ret = this.move(y*n + x, 0);
+          if (ret.error === 0) return true;
+        }
+        // try right
+        if (x < n-1 && board[y][x+1] === ikind_blank) {
+          const ret = this.move(y*n + x, 1);
+          if (ret.error === 0) return true;
+        }
+        // try up
+        if (y > 0 && board[y-1][x] === ikind_blank) {
+          const ret = this.move(y*n + x, 2);
+          if (ret.error === 0) return true;
+        }
+        // try down
+        if (y < n-1 && board[y+1][x] === ikind_blank) {
+          const ret = this.move(y*n + x, 3);
+          if (ret.error === 0) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 /* calculate grundy number */
 Game.prototype.getGrundy = function(){
   var next = this.enumnext();
@@ -185,4 +217,3 @@ Game.prototype.toString = function(){
   //turn
   str += this.turn + "\n";
 }
-

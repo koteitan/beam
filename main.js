@@ -24,9 +24,8 @@ const ctx = boardCanvas.getContext('2d');
 // Update start buttons enabled/disabled state
 function updateButtons() {
   startButtons.forEach(btn => {
-    const enabled = (currentState === STATES.START_GAME);
-    btn.disabled = !enabled;
-    btn.classList.toggle('active', enabled);
+    btn.disabled = false;
+    btn.classList.toggle('active', currentState === STATES.START_GAME);
   });
 }
 
@@ -199,11 +198,11 @@ boardCanvas.addEventListener('click', e => {
       setState(STATES.SHOOT_BEAM, `Error: ${res.error}`);
       return;
     }
+    // use Game.prototype.check for endgame
     game = res.next;
-    if (res.win) {
-      setState(STATES.START_GAME, `Player ${game.turn} won!`);
-    } else if (res.draw) {
-      setState(STATES.START_GAME, 'The game was even');
+    if (!game.check()) {
+      const winner = game.turn === 1 ? 2 : 1;
+      setState(STATES.START_GAME, `Player ${winner} won!`);
     } else {
       setState(STATES.PUT_TURRET, `Click a cell to put a turret for Player ${game.turn}`);
     }
