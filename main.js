@@ -115,12 +115,18 @@ function drawBoard(candidatePos = null) {
   if (currentState === STATES.SHOOT_BEAM && game && lastTurret !== null) {
     const lr = Math.floor(lastTurret/boardSize), lc = lastTurret%boardSize;
     for (let dir = 0; dir < 4; dir++) {
+      const dx = dir === 0 ? -1 : dir === 1 ? 1 : 0;
+      const dy = dir === 2 ? -1 : dir === 3 ? 1 : 0;
       const res = game.move(lastTurret, dir);
       if (res.error === 0) {
-        let r = lr + (dir === 2 ? -1 : dir === 3 ? 1 : 0);
-        let c = lc + (dir === 0 ? -1 : dir === 1 ? 1 : 0);
-        ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
-        ctx.fillRect(c*cellSize, r*cellSize, cellSize, cellSize);
+        for (let i = 1; i < boardSize; i++) {
+          const ty = lr + dy * i;
+          const tx = lc + dx * i;
+          if (ty < 0 || ty >= boardSize || tx < 0 || tx >= boardSize) break;
+          if (game.board[ty][tx] === ikind_turret) break;
+          ctx.fillStyle = 'rgba(173, 216, 230, 0.5)';
+          ctx.fillRect(tx * cellSize, ty * cellSize, cellSize, cellSize);
+        }
       }
     }
   }
@@ -163,14 +169,29 @@ boardCanvas.addEventListener('click', e => {
     drawBoard(pos);
   } else if (currentState===STATES.SHOOT_BEAM) {
     const lr = Math.floor(lastTurret/boardSize), lc = lastTurret%boardSize;
-    const dr = r-lr, dc = c-lc;
+    const dr = r - lr, dc = c - lc;
     let dir = -1;
-    if (dr===0&&dc===-1) dir=0;
-    else if (dr===0&&dc===1) dir=1;
-    else if (dr===-1&&dc===0) dir=2;
-    else if (dr===1&&dc===0) dir=3;
-    if (dir<0) {
-      setState(STATES.SHOOT_BEAM, 'Invalid direction. Click adjacent cell.');
+    // Determine direction based on alignment
+    if (dr === 0 && dc < 0) dir = 0;
+    else if (dr === 0 && dc > 0) dir = 1;
+    else if (dc === 0 && dr < 0) dir = 2;
+    else if (dc === 0 && dr > 0) dir = 3;
+    if (dir < 0) {
+      setState(STATES.SHOOT_BEAM, 'Invalid direction. Click aligned cell in same row or column.');
+      return;
+    }
+    // Check clear path to clicked cell
+    const dx = dir === 0 ? -1 : dir === 1 ? 1 : 0;
+    const dy = dir === 2 ? -1 : dir === 3 ? 1 : 0;
+    let reachable = false;
+    for (let i = 1; i < boardSize; i++) {
+      const ty = lr + dy * i, tx = lc + dx * i;
+      if (ty < 0 || ty >= boardSize || tx < 0 || tx >= boardSize) break;
+      if (game.board[ty][tx] === ikind_turret) break;
+      if (ty === r && tx === c) { reachable = true; break; }
+    }
+    if (!reachable) {
+      setState(STATES.SHOOT_BEAM, 'Invalid beam target. Choose a clear path in same row or column');
       return;
     }
     const res = game.move(lastTurret, dir);
