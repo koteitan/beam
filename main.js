@@ -30,7 +30,7 @@ function updateButtons() {
   });
 }
 
-// Set current state, system message, turn captions, and button states
+// Change UI state, message, turn highlight, buttons
 function setState(state, message) {
   currentState = state;
   messageBox.textContent = message;
@@ -42,120 +42,140 @@ function setState(state, message) {
   updateButtons();
 }
 
-// Initialize UI to start-game state
+// Initialize UI
 setState(STATES.START_GAME, "Select a game size");
 
-// Draw board grid, turrets, beams, and optionally highlight placement candidate
+// Draw board: grid, placement candidates, pieces, and click highlight
 function drawBoard(candidatePos = null) {
-  // Clear canvas
+  // Clear
   ctx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
 
-  // Draw grid
+  // Grid
   for (let i = 0; i <= boardSize; i++) {
     ctx.beginPath();
-    ctx.moveTo(i * cellSize, 0);
-    ctx.lineTo(i * cellSize, boardCanvas.height);
+    ctx.moveTo(i*cellSize, 0);
+    ctx.lineTo(i*cellSize, boardCanvas.height);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(0, i * cellSize);
-    ctx.lineTo(boardCanvas.width, i * cellSize);
+    ctx.moveTo(0, i*cellSize);
+    ctx.lineTo(boardCanvas.width, i*cellSize);
     ctx.stroke();
   }
 
+
+  // Highlight valid turret placement candidates
+  if (currentState === STATES.PUT_TURRET && game) {
+    for (let rr = 0; rr < boardSize; rr++) {
+      for (let cc = 0; cc < boardSize; cc++) {
+        const p = rr * boardSize + cc;
+        if (game.board[rr][cc] !== ikind_blank) continue;
+        let valid = false;
+        for (let d = 0; d < 4; d++) {
+          const r = game.move(p, d);
+          if (r.error === 0) { valid = true; break; }
+        }
+        if (valid) {
+          ctx.fillStyle = 'rgba(0,0,255,0.2)';
+          ctx.fillRect(cc * cellSize, rr * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+  }
+  // Draw turrets and beams
   if (game) {
     for (let r = 0; r < boardSize; r++) {
       for (let c = 0; c < boardSize; c++) {
         const cell = game.board[r][c];
         if (cell === ikind_blank) continue;
-        // Turret
         if (cell === ikind_turret) {
           const color = (game.turn === 1) ? 'red' : 'green';
           ctx.fillStyle = color;
           ctx.beginPath();
-          ctx.arc(c * cellSize + cellSize/2, r * cellSize + cellSize/2, cellSize/4, 0, Math.PI*2);
+          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
           ctx.fill();
-        } else {
-          // Beam
+        } else if (cell === ikind_horizbeam) {
+          const t = cellSize/5, o = (cellSize-t)/2;
           ctx.fillStyle = 'yellow';
-          ctx.fillRect(c*cellSize + cellSize/4, r*cellSize + cellSize/4, cellSize/2, cellSize/2);
+          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
+        } else if (cell === ikind_vertbeam) {
+          const t = cellSize/5, o = (cellSize-t)/2;
+          ctx.fillStyle = 'yellow';
+          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
+        } else if (cell === ikind_crossbeam) {
+          const t = cellSize/5, o = (cellSize-t)/2;
+          ctx.fillStyle = 'yellow';
+          ctx.fillRect(c*cellSize, r*cellSize+o, cellSize, t);
+          ctx.fillRect(c*cellSize+o, r*cellSize, t, cellSize);
         }
       }
     }
   }
 
-  // Highlight candidate turret position or beam direction click
+  // Highlight clicked candidate (turret or beam)
   if (candidatePos !== null) {
-    const row = Math.floor(candidatePos / boardSize);
-    const col = candidatePos % boardSize;
-    ctx.fillStyle = (currentState === STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
+    const row = Math.floor(candidatePos/boardSize);
+    const col = candidatePos%boardSize;
+    const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(col*cellSize + cellSize/2, row*cellSize + cellSize/2, cellSize/4, 0, Math.PI*2);
+    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/4, 0, Math.PI*2);
     ctx.fill();
   }
 }
 
-// Initialize the game
+// Initialize game and UI
 function initGame(size) {
   boardSize = size;
-  cellSize = boardCanvas.width / boardSize;
+  cellSize = boardCanvas.width/boardSize;
   game = new Game();
   game.init(boardSize);
-  drawBoard();
   setState(STATES.PUT_TURRET, `Click a cell to put a turret for Player ${game.turn}`);
+  drawBoard();
 }
 
-// Handle canvas clicks for both turret placement and beam shooting
-boardCanvas.addEventListener('click', (e) => {
+// Handle clicks: place turret candidate or shoot beam by adjacent click
+boardCanvas.addEventListener('click', e => {
   const rect = boardCanvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const col = Math.floor(x / cellSize);
-  const row = Math.floor(y / cellSize);
-  const pos = row * boardSize + col;
+  const x = e.clientX-rect.left, y = e.clientY-rect.top;
+  const c = Math.floor(x/cellSize), r = Math.floor(y/cellSize);
+  const pos = r*boardSize+c;
 
-  if (currentState === STATES.PUT_TURRET) {
-    // Place turret candidate
-    if (game.board[row][col] !== ikind_blank) {
+  if (currentState===STATES.PUT_TURRET) {
+    if (game.board[r][c]!==ikind_blank) {
       setState(STATES.PUT_TURRET, `Invalid cell. Choose another for Player ${game.turn}`);
       return;
     }
     lastTurret = pos;
-    drawBoard(pos);
     setState(STATES.SHOOT_BEAM, 'Click adjacent cell to shoot beam');
-  } else if (currentState === STATES.SHOOT_BEAM) {
-    // Determine direction from lastTurret to clicked pos
-    const lr = Math.floor(lastTurret / boardSize);
-    const lc = lastTurret % boardSize;
-    const dr = row - lr;
-    const dc = col - lc;
+    drawBoard(pos);
+  } else if (currentState===STATES.SHOOT_BEAM) {
+    const lr = Math.floor(lastTurret/boardSize), lc = lastTurret%boardSize;
+    const dr = r-lr, dc = c-lc;
     let dir = -1;
-    if (dr === 0 && dc === -1) dir = 0;
-    else if (dr === 0 && dc === 1) dir = 1;
-    else if (dr === -1 && dc === 0) dir = 2;
-    else if (dr === 1 && dc === 0) dir = 3;
-    if (dir < 0) {
+    if (dr===0&&dc===-1) dir=0;
+    else if (dr===0&&dc===1) dir=1;
+    else if (dr===-1&&dc===0) dir=2;
+    else if (dr===1&&dc===0) dir=3;
+    if (dir<0) {
       setState(STATES.SHOOT_BEAM, 'Invalid direction. Click adjacent cell.');
       return;
     }
-    // Execute move
-    const result = game.move(lastTurret, dir);
-    if (result.error !== 0) {
-      setState(STATES.SHOOT_BEAM, `Error: ${result.error}`);
+    const res = game.move(lastTurret, dir);
+    if (res.error !== 0) {
+      setState(STATES.SHOOT_BEAM, `Error: ${res.error}`);
       return;
     }
-    game = result.next;
-    drawBoard();
-    if (result.win) {
+    game = res.next;
+    if (res.win) {
       setState(STATES.START_GAME, `Player ${game.turn} won!`);
-    } else if (result.draw) {
+    } else if (res.draw) {
       setState(STATES.START_GAME, 'The game was even');
     } else {
       setState(STATES.PUT_TURRET, `Click a cell to put a turret for Player ${game.turn}`);
     }
+    drawBoard();
   }
 });
 
-// Set up start buttons
-startButtons.forEach(btn => {
-  btn.addEventListener('click', () => initGame(parseInt(btn.dataset.size)));
-});
+// Start button listeners
+startButtons.forEach(btn => btn.addEventListener('click', () => initGame(parseInt(btn.dataset.size))));

@@ -18,6 +18,11 @@ h1 {
   margin: 5px;
   font-size: 16px;
   cursor: pointer;
+  background-color: white;
+}
+.start-btn.active {
+  background-color: blue;
+  color: white;
 }
 
 /* Canvas styling */
