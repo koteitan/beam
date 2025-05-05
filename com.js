@@ -133,7 +133,7 @@ function com3step(g, callback) {
  */
 function comKstep(g, callback) {
   // 5x5かつ1手目のときはcom3stepに委譲
-  if (g.n === 5 && g.turnCount < 4) {
+  if (g.n === 5 && g.turnCount < 4 || g.n === 4 && g.turnCount < 1) {
     return com3step(g, callback);
   }
   // 6手先まで読むミニマックス法
