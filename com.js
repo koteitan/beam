@@ -201,8 +201,8 @@ const comStrategyNames = {
   en: ["Slime", "Goblin", "Elf", "Goliath", "Human Player"]
 };
 
-/* デフォルトの戦略インデックス（1: ゴブリン） */
-let defaultStrategyIndex = 1;
+/* デフォルトの戦略インデックス（2: エルフ） */
+let defaultStrategyIndex = 2;
 
 // 戦略インデックスがHuman Player（4）の場合はvsComModeをfalseにする
 function updateVsComMode(strategyIndex) {
