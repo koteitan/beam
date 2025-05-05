@@ -373,6 +373,8 @@ function drawBoard(candidatePos = null) {
   ctx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
 
   // Grid
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 1;
   for (let i = 0; i <= boardSize; i++) {
     ctx.beginPath();
     ctx.moveTo(i*cellSize, 0);
@@ -410,11 +412,23 @@ function drawBoard(candidatePos = null) {
         const cell = game.board[r][c];
         if (cell === ikind_blank) continue;
         if (cell === ikind_turret) {
-          const color = 'red';
-          ctx.fillStyle = color;
+          // ビームと同じ太さの赤い円を描画
+          const t = cellSize/6; // ビームと同じ太さ
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = t;
           ctx.beginPath();
-          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
+          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/2 - t/2 - 1, 0, Math.PI*2);
+          ctx.stroke();
+          
+          // 内側に白い円を描画
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.arc(c*cellSize+cellSize/2, r*cellSize+cellSize/2, cellSize/2 - t - 2, 0, Math.PI*2);
           ctx.fill();
+          
+          // 描画スタイルをリセット
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 1;
         } else if (cell === ikind_horizbeam) {
           const t = cellSize/6, o = (cellSize-t)/2;
           ctx.fillStyle = 'orange';
@@ -458,6 +472,8 @@ function drawBoard(candidatePos = null) {
     const col = candidatePos%boardSize;
     const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
     ctx.fillStyle = color;
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
     ctx.fill();
