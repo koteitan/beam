@@ -125,20 +125,87 @@ function com3step(g, callback) {
   return selectedState;
 }
 
+/**
+ * Kステップ先読み戦略: 深い先読みで最善手を選ぶ
+ * @param {Game} g - 現在のゲーム状態
+ * @param {Function} callback - 選択した次の状態を処理するコールバック関数
+ * @returns {Game|undefined} - コールバックが指定されていない場合は次の状態を返す
+ */
+function comKstep(g, callback) {
+  // 6手先まで読むミニマックス法
+  function minimax(state, depth, maximizingPlayer) {
+    const nextStates = state.enumnext();
+    if (nextStates.length === 0) {
+      // 手がなければ負け（今手番のプレイヤーが負け）
+      return maximizingPlayer ? -1 : 1;
+    }
+    if (depth === 0) {
+      // 評価関数（引き分け扱い）
+      return 0;
+    }
+    if (maximizingPlayer) {
+      let maxEval = -Infinity;
+      for (const next of nextStates) {
+        const evalValue = minimax(next, depth - 1, false);
+        if (evalValue > maxEval) maxEval = evalValue;
+        // すぐ勝てる手があれば即リターン
+        if (maxEval === 1) break;
+      }
+      return maxEval;
+    } else {
+      let minEval = Infinity;
+      for (const next of nextStates) {
+        const evalValue = minimax(next, depth - 1, true);
+        if (evalValue < minEval) minEval = evalValue;
+        // すぐ負ける手があれば即リターン
+        if (minEval === -1) break;
+      }
+      return minEval;
+    }
+  }
+
+  const nextStates = g.enumnext();
+  if (nextStates.length === 0) return;
+
+  // すべての手を評価し、最善手を選ぶ
+  let bestValue = -Infinity;
+  let bestStates = [];
+  for (const state of nextStates) {
+    const value = minimax(state, 5, false); // 6手先まで読む（今の手＋5手、次は相手手番）
+    if (value > bestValue) {
+      bestValue = value;
+      bestStates = [state];
+    } else if (value === bestValue) {
+      bestStates.push(state);
+    }
+  }
+
+  // 最善手が複数あればランダムに選択
+  const selectedState = bestStates.length > 0
+    ? bestStates[Math.floor(Math.random() * bestStates.length)]
+    : nextStates[Math.floor(Math.random() * nextStates.length)];
+
+  if (callback) {
+    callback(selectedState);
+    return;
+  }
+  return selectedState;
+}
+
 // COMの戦略関数の配列
-const comStrategies = [comRandom, com2step, com3step];
+const comStrategies = [comRandom, com2step, com3step, comKstep];
 
 // COMの戦略名（日本語と英語）
 const comStrategyNames = {
-  ja: ["スライム", "ゴブリン", "エルフ", "２人対戦"],
-  en: ["Slime", "Goblin", "Elf", "Human Player"]
+  ja: ["スライム", "ゴブリン", "エルフ", "ゴリアテ", "２人対戦"],
+  en: ["Slime", "Goblin", "Elf", "Goliath", "Human Player"]
 };
 
-// デフォルトの戦略インデックス（1: ゴブリン）
+/* デフォルトの戦略インデックス（1: ゴブリン） */
 let defaultStrategyIndex = 1;
 
-// 戦略インデックスがHuman Player（3）の場合はvsComModeをfalseにする
+// 戦略インデックスがHuman Player（4）の場合はvsComModeをfalseにする
 function updateVsComMode(strategyIndex) {
-  vsComMode = (strategyIndex !== 3);
+  vsComMode = (strategyIndex !== 4);
   return vsComMode;
 }
