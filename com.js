@@ -132,6 +132,10 @@ function com3step(g, callback) {
  * @returns {Game|undefined} - コールバックが指定されていない場合は次の状態を返す
  */
 function comKstep(g, callback) {
+  // 5x5かつ1手目のときはcom3stepに委譲
+  if (g.n === 5 && g.turnCount < 4) {
+    return com3step(g, callback);
+  }
   // 6手先まで読むミニマックス法
   function minimax(state, depth, maximizingPlayer) {
     minimaxCallCount++;
@@ -156,8 +160,7 @@ function comKstep(g, callback) {
     } else {
       let minEval = Infinity;
       for (const next of nextStates) {
-        const nextDepth = minimaxCallCount >= 2000000 ? depth - 2 : depth - 1;
-        const evalValue = minimax(next, nextDepth, true);
+        const evalValue = minimax(next, depth - 1, true);
         if (evalValue < minEval) minEval = evalValue;
         // すぐ負ける手があれば即リターン
         if (minEval === -1) break;

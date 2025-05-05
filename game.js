@@ -14,6 +14,7 @@ Game = function(g){
     this.turn = g.turn;
     this.error = g.error;
     this.n = g.n;
+    this.turnCount = g.turnCount;
   }
 }
 
@@ -22,6 +23,7 @@ Game.prototype.init = function(n){
   this.board = new Array(n);
   this.turn = 1;
   this.error = 0;
+  this.turnCount = 0;
 
   for (var y = 0; y < n; y++){
     this.board[y] = new Array(n);
@@ -69,6 +71,7 @@ Game.prototype.move = function(pos, dir){
   g.board[y][x] = ikind_turret;
   g.turn = (g.turn == 1) ? 2 : 1;
   g.error = 0;
+  g.turnCount++;
   /* shoot beam to dir */
   for (var i = 1; i < n; i++){
     const tx = x + dx * i;
