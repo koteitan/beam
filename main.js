@@ -91,13 +91,19 @@ window.addEventListener('DOMContentLoaded', function() {
 function updateGameRules() {
   const rulesJa = document.getElementById('rules-ja');
   const rulesEn = document.getElementById('rules-en');
+  const rulesTitleJa = document.getElementById('rules-title-ja');
+  const rulesTitleEn = document.getElementById('rules-title-en');
   
   if (lang === 'ja') {
     rulesJa.style.display = 'block';
     rulesEn.style.display = 'none';
+    rulesTitleJa.style.display = 'block';
+    rulesTitleEn.style.display = 'none';
   } else {
     rulesJa.style.display = 'none';
     rulesEn.style.display = 'block';
+    rulesTitleJa.style.display = 'none';
+    rulesTitleEn.style.display = 'block';
   }
 }
 
@@ -131,7 +137,13 @@ player2StartCheckbox.addEventListener('change', function() {
 // プレイヤーのキャプションを更新する関数
 function updatePlayerCaptions() {
   // プレイヤー1のキャプションを言語に応じて更新
-  player1Caption.textContent = lang === 'ja' ? 'プレイヤー1' : 'Player 1';
+  if (vsComMode) {
+    // COMモードの場合、「プレイヤー」と表示
+    player1Caption.textContent = lang === 'ja' ? 'プレイヤー' : 'Player';
+  } else {
+    // 2人対戦モードの場合、「プレイヤー1」と表示
+    player1Caption.textContent = lang === 'ja' ? 'プレイヤー1' : 'Player 1';
+  }
   
   // プレイヤー2のキャプションを更新
   if (vsComMode) {
@@ -163,6 +175,10 @@ comStrategySelect.addEventListener('change', function() {
 // COMの手を選択する関数（com.jsの戦略関数を呼び出す）
 function handleComTurn() {
   if (!vsComMode || game.turn !== 2) return; // COMモードでない、またはCOMのターンでない場合は何もしない
+  
+  // COMが考え中のメッセージを表示
+  const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
+  setState(STATES.PUT_TURRET, `${monsterName}が考えています...`, `${monsterName} is thinking...`);
   
   // 少し遅延を入れてCOMの動きを見えるようにする
   setTimeout(() => {
