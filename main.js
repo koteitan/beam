@@ -470,13 +470,25 @@ function drawBoard(candidatePos = null) {
   if (candidatePos !== null) {
     const row = Math.floor(candidatePos/boardSize);
     const col = candidatePos%boardSize;
-    const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.5)' : 'rgba(255,0,0,0.5)';
-    ctx.fillStyle = color;
+    const color = (currentState===STATES.PUT_TURRET) ? 'rgba(0,0,255,0.4)' : 'rgba(255,0,0,0.4)';
+    
+    // ビームと同じ太さの円を描画
+    const t = cellSize/6; // ビームと同じ太さ
+    ctx.strokeStyle = color;
+    ctx.lineWidth = t;
+    ctx.beginPath();
+    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - t/2 - 1, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // 内側に白い円を描画
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - t - 2, 0, Math.PI*2);
+    ctx.fill();
+    
+    // 描画スタイルをリセット
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(col*cellSize+cellSize/2, row*cellSize+cellSize/2, cellSize/2 - 2, 0, Math.PI*2);
-    ctx.fill();
   }
 }
 
