@@ -134,6 +134,7 @@ function com3step(g, callback) {
 function comKstep(g, callback) {
   // 6手先まで読むミニマックス法
   function minimax(state, depth, maximizingPlayer) {
+    minimaxCallCount++;
     const nextStates = state.enumnext();
     if (nextStates.length === 0) {
       // 手がなければ負け（今手番のプレイヤーが負け）
@@ -155,7 +156,8 @@ function comKstep(g, callback) {
     } else {
       let minEval = Infinity;
       for (const next of nextStates) {
-        const evalValue = minimax(next, depth - 1, true);
+        const nextDepth = minimaxCallCount >= 2000000 ? depth - 2 : depth - 1;
+        const evalValue = minimax(next, nextDepth, true);
         if (evalValue < minEval) minEval = evalValue;
         // すぐ負ける手があれば即リターン
         if (minEval === -1) break;
@@ -163,6 +165,8 @@ function comKstep(g, callback) {
       return minEval;
     }
   }
+
+  minimaxCallCount = 0;
 
   const nextStates = g.enumnext();
   if (nextStates.length === 0) return;
@@ -191,6 +195,9 @@ function comKstep(g, callback) {
   }
   return selectedState;
 }
+
+// minimaxの呼び出し回数をカウントするグローバル変数
+let minimaxCallCount = 0;
 
 // COMの戦略関数の配列
 const comStrategies = [comRandom, com2step, com3step, comKstep];
