@@ -222,12 +222,41 @@ body {
   text-align: left;
 }
 
-#rules-title {
+.rules-title {
   font-size: 18px;
   margin-top: 0;
   margin-bottom: 10px;
   text-align: center;
   color: #333;
+}
+
+/* 戦績表のスタイル */
+.record-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.record-table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.record-table th, .record-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.record-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.record-table td {
+  font-size: 16px;
 }
 
 .rules {
@@ -332,9 +361,23 @@ address {
     margin-bottom: 15px;
   }
   
-  #rules-title {
+  .rules-title {
     font-size: 16px;
     margin-bottom: 8px;
+  }
+  
+  /* 戦績表のレスポンシブスタイル */
+  .record-container {
+    margin-top: 15px;
+  }
+  
+  .record-table {
+    max-width: 100%;
+  }
+  
+  .record-table th, .record-table td {
+    padding: 5px;
+    font-size: 12px;
   }
   
   .rules {

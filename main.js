@@ -1,5 +1,8 @@
 // main.js - Control game state and UI
 
+// 成績記録用の配列
+let record = {};
+
 // Define game states
 const STATES = {
   START_GAME: "start-game",
@@ -50,6 +53,119 @@ function setState(state, msgJa, msgEn) {
 // Initialize UI
 setState(STATES.START_GAME, "ゲームサイズを選択してください", "Select a game size");
 
+// LocalStorageから成績を読み込む
+function loadRecord() {
+  const savedRecord = localStorage.getItem('beamGameRecord');
+  if (savedRecord) {
+    record = JSON.parse(savedRecord);
+  }
+}
+
+// 成績を保存する
+function saveRecord() {
+  localStorage.setItem('beamGameRecord', JSON.stringify(record));
+}
+
+// 成績を更新する
+function updateRecord(strategyIndex, size, startFromPlayer2, isWin) {
+  // 必要なオブジェクト構造を作成
+  if (!record[strategyIndex]) {
+    record[strategyIndex] = {};
+  }
+  if (!record[strategyIndex][size]) {
+    record[strategyIndex][size] = {};
+  }
+  
+  // 先手/後手の結果を記録
+  const startKey = startFromPlayer2 ? '1' : '0';
+  record[strategyIndex][size][startKey] = isWin ? 1 : 0;
+  
+  // LocalStorageに保存
+  saveRecord();
+}
+
+// 成績表を更新する
+function updateRecordTable() {
+  const recordTable = document.getElementById('record-table');
+  if (!recordTable) return;
+  
+  // テーブルをクリア
+  recordTable.innerHTML = '';
+  
+  // ヘッダー行を作成
+  const headerRow = document.createElement('tr');
+  
+  // 左上のセル（空白）
+  const emptyCell = document.createElement('th');
+  headerRow.appendChild(emptyCell);
+  
+  // 先手/後手の列見出し
+  const firstPlayerHeader = document.createElement('th');
+  firstPlayerHeader.colSpan = 3;
+  firstPlayerHeader.textContent = lang === 'ja' ? '先手' : 'First';
+  headerRow.appendChild(firstPlayerHeader);
+  
+  const secondPlayerHeader = document.createElement('th');
+  secondPlayerHeader.colSpan = 3;
+  secondPlayerHeader.textContent = lang === 'ja' ? '後手' : 'Second';
+  headerRow.appendChild(secondPlayerHeader);
+  
+  recordTable.appendChild(headerRow);
+  
+  // サイズの行を作成
+  const sizeRow = document.createElement('tr');
+  
+  // 左端のセル（空白）
+  const sizeEmptyCell = document.createElement('th');
+  sizeRow.appendChild(sizeEmptyCell);
+  
+  // サイズの列見出し（先手）
+  for (let i = 3; i <= 5; i++) {
+    const sizeCell = document.createElement('th');
+    sizeCell.textContent = i;
+    sizeRow.appendChild(sizeCell);
+  }
+  
+  // サイズの列見出し（後手）
+  for (let i = 3; i <= 5; i++) {
+    const sizeCell = document.createElement('th');
+    sizeCell.textContent = i;
+    sizeRow.appendChild(sizeCell);
+  }
+  
+  recordTable.appendChild(sizeRow);
+  
+  // 各戦略の行を作成
+  for (let i = 0; i < comStrategyNames.ja.length - 1; i++) {
+    const strategyRow = document.createElement('tr');
+    
+    // 戦略名
+    const strategyCell = document.createElement('th');
+    strategyCell.textContent = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][i];
+    strategyRow.appendChild(strategyCell);
+    
+    // 先手の成績
+    for (let size = 3; size <= 5; size++) {
+      const resultCell = document.createElement('td');
+      if (record[i] && record[i][size] && record[i][size]['0'] === 1) {
+        resultCell.textContent = '✅';
+      }
+      strategyRow.appendChild(resultCell);
+    }
+    
+    // 後手の成績
+    for (let size = 3; size <= 5; size++) {
+      const resultCell = document.createElement('td');
+      if (record[i] && record[i][size] && record[i][size]['1'] === 1) {
+        resultCell.textContent = '✅';
+      }
+      strategyRow.appendChild(resultCell);
+    }
+    
+    recordTable.appendChild(strategyRow);
+  }
+}
+
 // ページ読み込み時にcanvasとゲームを初期化
 function initializeCanvas() {
   const isMobile = window.innerWidth < 600;
@@ -85,25 +201,37 @@ window.addEventListener('DOMContentLoaded', function() {
   
   // ゲームルールの表示を言語に応じて切り替え
   updateGameRules();
+  
+  // LocalStorageから成績を読み込む
+  loadRecord();
+  
+  // 成績表を更新
+  updateRecordTable();
 });
 
-// ゲームルールの表示を言語に応じて切り替える関数
+// ゲームルールと戦績表の表示を言語に応じて切り替える関数
 function updateGameRules() {
   const rulesJa = document.getElementById('rules-ja');
   const rulesEn = document.getElementById('rules-en');
   const rulesTitleJa = document.getElementById('rules-title-ja');
   const rulesTitleEn = document.getElementById('rules-title-en');
+  const recordTitleJa = document.getElementById('record-title-ja');
+  const recordTitleEn = document.getElementById('record-title-en');
   
   if (lang === 'ja') {
     rulesJa.style.display = 'block';
     rulesEn.style.display = 'none';
     rulesTitleJa.style.display = 'block';
     rulesTitleEn.style.display = 'none';
+    recordTitleJa.style.display = 'block';
+    recordTitleEn.style.display = 'none';
   } else {
     rulesJa.style.display = 'none';
     rulesEn.style.display = 'block';
     rulesTitleJa.style.display = 'none';
     rulesTitleEn.style.display = 'block';
+    recordTitleJa.style.display = 'none';
+    recordTitleEn.style.display = 'block';
   }
 }
 
@@ -213,16 +341,24 @@ function handleComTurn() {
       // 少し遅延を入れてビーム発射を見えるようにする
       setTimeout(() => {
         game = nextState;
-        if (!game.check()) {
-          const winner = game.turn === 1 ? 2 : 1;
-          if (winner === 2 && vsComMode) {
-            // COMが勝利した場合、モンスター名を表示
-            const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
-            setState(STATES.START_GAME, `${monsterName}の勝利です！`, `${monsterName} won!`);
-          } else {
-            setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
-          }
+      if (!game.check()) {
+        const winner = game.turn === 1 ? 2 : 1;
+        
+        // 成績を更新（COMが勝った場合は0、プレイヤーが勝った場合は1）
+        if (vsComMode) {
+          const playerWon = winner === 1;
+          updateRecord(comStrategyIndex, boardSize, startFromPlayer2, playerWon);
+          updateRecordTable();
+        }
+        
+        if (winner === 2 && vsComMode) {
+          // COMが勝利した場合、モンスター名を表示
+          const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
+          setState(STATES.START_GAME, `${monsterName}の勝利です！`, `${monsterName} won!`);
         } else {
+          setState(STATES.START_GAME, `プレイヤー${winner}の勝利です！`, `Player ${winner} won!`);
+        }
+      } else {
           setState(STATES.PUT_TURRET, `砲台を置いてください`, `Place a turret`);
         }
         drawBoard();
@@ -439,6 +575,14 @@ boardCanvas.addEventListener('click', e => {
     game = res.next;
     if (!game.check()) {
       const winner = game.turn === 1 ? 2 : 1;
+      
+      // 成績を更新（COMが勝った場合は0、プレイヤーが勝った場合は1）
+      if (vsComMode) {
+        const playerWon = winner === 1;
+        updateRecord(comStrategyIndex, boardSize, startFromPlayer2, playerWon);
+        updateRecordTable();
+      }
+      
       if (winner === 2 && vsComMode) {
         // COMが勝利した場合、モンスター名を表示
         const monsterName = comStrategyNames[lang === 'ja' ? 'ja' : 'en'][comStrategyIndex];
