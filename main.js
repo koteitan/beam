@@ -1,5 +1,27 @@
 // main.js - Control game state and UI
 
+/* --- localStorage 名前空間ヘルパ ----------------------------------------
+   koteitan.github.io は全サイトで 1 オリジンを共有するので、キーには
+   リポジトリ名の prefix "beam:" を付ける。旧キーは読み込み時の
+   フォールバックとしてのみ参照し、削除はしない。 */
+const LS_NS = 'beam';
+const LS_LEGACY_RECORD_KEY = 'beamGameRecord';
+const lsKey = (name) => LS_NS + ':' + name;
+function loadState() {
+  for (const key of [lsKey('state'), LS_LEGACY_RECORD_KEY]) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) continue;
+      const v = JSON.parse(raw);
+      if (v && typeof v === 'object') return v;
+    } catch (e) {}
+  }
+  return null;
+}
+function saveState(state) {
+  try { localStorage.setItem(lsKey('state'), JSON.stringify(state)); } catch (e) {}
+}
+
 // 成績記録用の配列
 let record = {};
 
@@ -55,15 +77,15 @@ setState(STATES.START_GAME, "ゲームサイズを選択してください", "Se
 
 // LocalStorageから成績を読み込む
 function loadRecord() {
-  const savedRecord = localStorage.getItem('beamGameRecord');
-  if (savedRecord) {
-    record = JSON.parse(savedRecord);
+  const saved = loadState();
+  if (saved) {
+    record = saved;
   }
 }
 
 // 成績を保存する
 function saveRecord() {
-  localStorage.setItem('beamGameRecord', JSON.stringify(record));
+  saveState(record);
 }
 
 // 成績を更新する
